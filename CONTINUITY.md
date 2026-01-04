@@ -13,7 +13,7 @@ Key decisions:
 - Default output should include a JSON template file (not just guidance).
 
 State:
-- Skill repackaged; ready for GitHub repo creation/push guidance.
+- Added README, .gitignore, and MIT license to repo.
 
 Done:
 - Pulled ZKP2P "Build a New Provider" markdown for field definitions and examples.
@@ -23,19 +23,22 @@ Done:
 - Added extension parsing reference from zkp2p-clients; repackaged skill.
 - Rewrote extension parsing reference to remove private paths; repackaged skill.
 - Repackaged skill per request.
+- Added `README.md`, `.gitignore`, and `LICENSE`.
 
 Now:
-- Provide GitHub repo creation/push guidance.
+- Commit and push repo updates if desired.
 
 Next:
-- Apply any further edits or repo adjustments and repackage if needed.
+- Push to GitHub once auth is set; apply any repo adjustments if needed.
 
 Open questions (UNCONFIRMED if needed):
-- Preferred GitHub org/user and repo name?
-- Use GitHub CLI or web UI?
+- Should the MIT license holder name be different than \"ZKP2P\"?
 
 Working set (files/ids/commands):
 - /home/ubuntu/zkp2p-skill/CONTINUITY.md
+- /home/ubuntu/zkp2p-skill/README.md
+- /home/ubuntu/zkp2p-skill/LICENSE
+- /home/ubuntu/zkp2p-skill/.gitignore
 - /home/ubuntu/zkp2p-skill/skills/public/zkp2p-provider-template/SKILL.md
 - /home/ubuntu/zkp2p-skill/skills/public/zkp2p-provider-template/references/network-capture.md
 - /home/ubuntu/zkp2p-skill/skills/public/zkp2p-provider-template/references/provider-template.md
