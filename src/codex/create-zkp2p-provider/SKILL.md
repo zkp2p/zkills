@@ -10,38 +10,54 @@ Guide users to turn target-platform network requests into a valid ZKP2P provider
 
 ## Workflow
 
-### 1. Required setup and scope
-- Require Chrome DevTools MCP in Codex. If missing, install first: `codex mcp add chrome-devtools -- npx chrome-devtools-mcp@latest`.
+### 1. Provider intake (first step)
+- Ask the user to describe the provider they want to build.
+- Ask which option applies: (1) payment/transaction provider or (2) something else (identity/account/other).
 - Ask which website/platform and region they are integrating.
 - Ask the use case and the exact proof fields required (e.g., identity/username, account status, account ID, transaction details).
 - Ask what the proof should attest (example: "user owns Venmo @handle").
 - Ask if the data appears in a list UI, a detail page, or a profile/settings page.
+- If it's a payment transaction, the goal is to mirror the structure of reference transaction templates in `references/provider-examples.md`.
 
-### 2. Capture request(s)
+Use this intake prompt (send to the user):
+```
+Describe the provider you want to build. Is it (1) a payment/transaction provider or (2) something else (identity/account/other)? Which website/platform and region? What exact fields must be proven, and what should the proof attest? Where does the data appear (list, detail, profile/settings)?
+```
+
+### 2. Required setup (Chrome DevTools MCP)
+- Require Chrome DevTools MCP in Codex. If missing, install first: `codex mcp add chrome-devtools -- npx chrome-devtools-mcp@latest`.
+- If the platform or flow is not yet known, ask the user to log in to the site and describe where the proof data appears; once they provide enough detail, start intercepting network requests.
+
+Use this setup prompt (send to the user):
+```
+I need Chrome DevTools MCP to capture network requests. If it is not installed, run: codex mcp add chrome-devtools -- npx chrome-devtools-mcp@latest. Then log in to the platform and tell me which page shows the required data; once you're there, I'll begin intercepting requests.
+```
+
+### 3. Capture request(s)
 - Ask for captured network requests from the MCP session. If not available, direct them to `references/network-capture.md` and request a sanitized capture.
 - Request at least one request/response that includes the required proof fields.
 - **Check if multiple requests are needed** (see "Handling Multiple Data Sources" below).
 
-### 3. Identify candidate request(s)
+### 4. Identify candidate request(s)
 - Prefer the endpoint that returns the required proof fields (list, detail, profile, or settings).
 - Verify response type (JSON vs HTML) to choose JSONPath vs XPath extraction.
 
-### 4. Map fields to selectors
+### 5. Map fields to selectors
 - Define `paramNames` and `paramSelectors` for dynamic parameters used in `url`/`body`.
 - Define `responseMatches` to validate proof fields.
 - If the flow requires a list UI for user selection, define `transactionsExtraction` selectors; otherwise confirm whether it can be omitted.
 - Flag sensitive headers and add `responseRedactions`.
 - For fields from multiple sources, use appropriate `paramSelectors.source` values.
 
-### 5. Assemble the template
+### 6. Assemble the template
 - Fill required top-level fields (`actionType`, `proofEngine`, `authLink`, `url`, `method`, `metadata`).
 - Set `actionType` to reflect the use case (identity, account, transaction).
 - Set `proofEngine` to `"reclaim"` for new templates.
 - Use `references/provider-template.md` for a skeleton and `references/provider-fields.md` for deep field guidance.
-- When possible, align choices with patterns in `references/provider-examples.md`.
+- When possible, align choices with patterns in `references/provider-examples.md` (especially for payment/transaction templates).
 - For multi-request flows, configure `additionalProofs` or `metadataUrl`.
 
-### 6. Validate and iterate
+### 7. Validate and iterate
 - Test in the providers dev flow (see docs in `references/provider-template.md`).
 - Tighten `urlRegex`, add `fallbackUrlRegex`, and refine selectors based on failures.
 
@@ -56,7 +72,7 @@ Use it to capture network requests directly (see `references/network-capture.md`
 
 Use an interactive flow:
 - Ask for permission to control a Chrome session and access network data.
-- Ask the user to log in to the target platform in the opened browser.
+- Ask the user to log in to the target platform in the opened browser (if the platform/flow is not yet known, ask them to show where the data lives before intercepting).
 - After login, tell the user to start browsing and navigate to the page that contains the proof fields.
 - Ask: "Which page should I click to reach the relevant data (profile, settings, history, transactions)?" and follow their suggested path.
 - Ask: "Are there other pages or tabs I should click to reveal the required fields?"
