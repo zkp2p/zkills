@@ -8,6 +8,10 @@ description: Create or update ZKP2P provider templates (zkTLS/Reclaim) by captur
 ## Overview
 Guide users to turn target-platform network requests into a valid ZKP2P provider JSON template with safe redaction and testable extraction rules.
 
+## Skill installation and setup (Chrome DevTools MCP)
+- As part of installing this skill, install Chrome DevTools MCP in Claude Code: `claude mcp add chrome-devtools npx chrome-devtools-mcp@latest`.
+- This is required to capture network requests.
+
 ## Workflow
 
 ### 1. Provider intake (first step)
@@ -24,13 +28,13 @@ Use this intake prompt (send to the user):
 Describe the provider you want to build. Is it (1) a payment/transaction provider or (2) something else (identity/account/other)? Which website/platform and region? What exact fields must be proven, and what should the proof attest? Where does the data appear (list, detail, profile/settings)?
 ```
 
-### 2. Required setup (Chrome DevTools MCP)
-- Require Chrome DevTools MCP in Claude Code. If missing, install first: `claude mcp add chrome-devtools npx chrome-devtools-mcp@latest`.
+### 2. Required setup (login and context)
+- Confirm Chrome DevTools MCP is installed (see Skill installation and setup section).
 - If the platform or flow is not yet known, ask the user to log in to the site and describe where the proof data appears; once they provide enough detail, start intercepting network requests.
 
 Use this setup prompt (send to the user):
 ```
-I need Chrome DevTools MCP to capture network requests. If it is not installed, run: claude mcp add chrome-devtools npx chrome-devtools-mcp@latest. Then log in to the platform and tell me which page shows the required data; once you're there, I'll begin intercepting requests.
+I need Chrome DevTools MCP to capture network requests. If it is not installed, install it using the Skill installation and setup section. Then log in to the platform and tell me which page shows the required data; once you're there, I'll begin intercepting requests.
 ```
 
 ### 3. Capture request(s)
@@ -65,10 +69,7 @@ I need Chrome DevTools MCP to capture network requests. If it is not installed, 
 
 ## MCP-assisted capture (Chrome DevTools) — required
 
-Install Chrome DevTools MCP in Claude Code before capture:
-`claude mcp add chrome-devtools npx chrome-devtools-mcp@latest`
-
-Use it to capture network requests directly (see `references/network-capture.md`).
+Chrome DevTools MCP must be installed before capture (see Skill installation and setup section). Use it to capture network requests directly (see `references/network-capture.md`).
 
 Use an interactive flow:
 - Ask for permission to control a Chrome session and access network data.

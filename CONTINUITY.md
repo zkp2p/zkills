@@ -1,5 +1,5 @@
 Goal (incl. success criteria):
-- Update create-zkp2p-provider skill to add an explicit first-step intake (payment vs other), require Chrome DevTools MCP, prompt the user to log in when platform is unknown, and align payment flows to reference templates.
+- Move Chrome DevTools MCP installation guidance into the skill installation/setup section inside the create-zkp2p-provider skill (Codex + Claude), with reduced duplication elsewhere.
 
 Constraints/Assumptions:
 - Platform-specific skills under `src/claude` and `src/codex`.
@@ -10,20 +10,22 @@ Key decisions:
 - Update both Codex and Claude skill variants for consistency.
 
 State:
-- Intake prompt, MCP setup prompt, and payment-template alignment added to both Codex/Claude skill workflows.
+- Updated Codex/Claude SKILL.md installation section wording and references.
 
 Done:
-- Updated `src/codex/create-zkp2p-provider/SKILL.md` and `src/claude/create-zkp2p-provider/SKILL.md` with intake + setup prompts, login guidance, and payment-template alignment.
+- Prior intake + setup prompt and payment-template alignment updates applied.
+- Updated Codex/Claude SKILL.md to tie MCP install to skill installation/setup section and adjusted references.
 
 Now:
-- Await user confirmation or further adjustments.
+- Await user confirmation or further tweaks.
 
 Next:
-- Apply any follow-up edits if requested.
+- Apply any requested wording adjustments.
 
 Open questions (UNCONFIRMED if needed):
 - None.
 
 Working set (files/ids/commands):
+- CONTINUITY.md
 - src/claude/create-zkp2p-provider/SKILL.md
 - src/codex/create-zkp2p-provider/SKILL.md
