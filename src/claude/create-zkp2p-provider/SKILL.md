@@ -9,10 +9,15 @@ description: Create or update ZKP2P provider templates (zkTLS/Reclaim) by captur
 Guide users to turn target-platform network requests into a valid ZKP2P provider JSON template with safe redaction and testable extraction rules.
 
 ## Skill installation and setup (Chrome DevTools MCP)
-- As part of installing this skill, install Chrome DevTools MCP in Claude Code: `claude mcp add chrome-devtools npx chrome-devtools-mcp@latest`.
-- This is required to capture network requests.
+- Required before first use. Do not attempt capture until the user confirms it is installed.
+- Install Chrome DevTools MCP in Claude Code: `claude mcp add chrome-devtools npx chrome-devtools-mcp@latest`.
+- If any MCP call fails because Chrome DevTools MCP is not connected, pause and have the user install it first, then retry.
 
 ## Workflow
+
+### 0) If Chrome DevTools MCP is not connected, set it up first
+- If any MCP call fails because Chrome DevTools MCP is not connected, pause the workflow and instruct the user to install it using the Skill installation and setup section.
+- Resume only after the user confirms installation.
 
 ### 1. Provider intake (first step)
 - Ask the user to describe the provider they want to build.
@@ -34,7 +39,7 @@ Describe the provider you want to build. Is it (1) a payment/transaction provide
 
 Use this setup prompt (send to the user):
 ```
-I need Chrome DevTools MCP to capture network requests. If it is not installed, install it using the Skill installation and setup section. Then log in to the platform and tell me which page shows the required data; once you're there, I'll begin intercepting requests.
+Before we continue, confirm Chrome DevTools MCP is installed (see Skill installation and setup section). Then log in to the platform and tell me which page shows the required data; once you're there, I'll begin intercepting requests.
 ```
 
 ### 3. Capture request(s)
