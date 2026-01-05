@@ -10,18 +10,19 @@ Key decisions:
 - Commit only MCP gating + dist rebuild + ledger updates; leave other modified files uncommitted.
 
 State:
-- Ready to stage selected files, commit, and push to main; other modified files remain unstaged.
+- MCP gating changes committed and pushed to main; other modified files remain unstaged.
 
 Done:
 - Updated `src/codex/create-zkp2p-provider/SKILL.md` MCP setup to require user install first and added a gating step.
 - Updated `src/claude/create-zkp2p-provider/SKILL.md` MCP setup to require user install first and added a gating step.
 - Ran `./scripts/bundle-claude.sh` and `./scripts/package-codex.sh` to rebuild dist artifacts.
+- Committed changes and pushed to `origin/main` (remote reported repo moved to `git@github.com:zkp2p/zkills.git`).
 
 Now:
-- Stage selected files, commit, and push to main.
+- Await further instructions.
 
 Next:
-- Confirm push and report status.
+- None.
 
 Open questions (UNCONFIRMED if needed):
 - None.
