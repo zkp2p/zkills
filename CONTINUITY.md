@@ -9,20 +9,21 @@ Key decisions:
 - Update both Codex and Claude SKILL.md files and regenerate dist artifacts.
 
 State:
-- Local changes ready; pending commit and push.
+- Commit created; push rejected because remote has new commits.
 
 Done:
+- Committed changes to Codex/Claude SKILL.md and CONTINUITY.md.
 - Added CSRF replay guidance and a Gotchas/Troubleshooting section in both SKILL.md files.
 - Rebuilt dist artifacts via `./scripts/bundle-claude.sh` and `./scripts/package-codex.sh`.
 
 Now:
-- Stage changes, commit, and push to remote.
+- Resolve push rejection (rebase/merge) while preserving unrelated local changes.
 
 Next:
-- Confirm push status and share summary.
+- Push updated branch once remote changes are integrated.
 
 Open questions (UNCONFIRMED if needed):
-- None.
+- How should we handle unrelated local changes in `README.md`, `scripts/install-claude.sh`, and `scripts/install-codex.sh` before rebasing/pushing?
 
 Working set (files/ids/commands):
 - CONTINUITY.md

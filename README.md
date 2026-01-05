@@ -40,7 +40,7 @@ skills/
 ```bash
 ./scripts/install-claude.sh
 ```
-This copies the skill to `~/.claude/skills/create-zkp2p-provider/`.
+This copies the skill to `~/.claude/skills/create-zkp2p-provider/` and installs Chrome DevTools MCP.
 
 **Option 2: Bundle into single file**
 ```bash
@@ -53,24 +53,17 @@ Copy `src/claude/create-zkp2p-provider/` to your Claude Code skills directory.
 
 ### Codex
 
-**Option 1: Package and install**
+**Option 1: Install skill directory**
+```bash
+./scripts/install-codex.sh
+```
+This copies the skill to `~/.codex/skills/create-zkp2p-provider/` and installs Chrome DevTools MCP.
+
+**Option 2: Package for distribution**
 ```bash
 ./scripts/package-codex.sh
 ```
 Creates `dist/codex/create-zkp2p-provider.skill`.
-
-Then install using the Codex skill-installer:
-```bash
-python3 ~/.codex/skills/.system/skill-installer/scripts/install_skill.py \
-  dist/codex/create-zkp2p-provider.skill
-```
-
-**Option 2: Use the Codex skill packaging system**
-```bash
-python3 ~/.codex/skills/.system/skill-creator/scripts/package_skill.py \
-  src/codex/create-zkp2p-provider \
-  dist/codex
-```
 
 ## Usage
 
