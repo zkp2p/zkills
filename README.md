@@ -1,27 +1,27 @@
-# ZKP2P Provider Template Skill
+# Create ZKP2P Provider Skill
 
-This repo hosts the ZKP2P provider template skill for guiding AI agents to create zkTLS/Reclaim provider templates. The skill works with both **Claude Code** and **Codex**.
+This repo hosts the create-zkp2p-provider skill for guiding AI agents to create zkTLS/Reclaim provider templates. The skill works with both **Claude Code** and **Codex**.
 
 ## What This Skill Does
 
-Guides users to turn payment-platform network requests into valid ZKP2P provider JSON templates by:
-- Capturing network requests (HAR or intercepted)
-- Mapping transaction fields (amount, date, recipient, status, currency)
+Guides users to turn target-platform network requests into valid ZKP2P provider JSON templates by:
+- Capturing network requests via Chrome DevTools MCP
+- Mapping user-specified proof fields (identity, account attributes, or transactions)
 - Producing provider JSON with proper selectors and redactions
 
 ## Repository Structure
 
 ```
 skills/
-├── src/                              # Skill source (shared)
-│   └── zkp2p-provider-template/
-│       ├── SKILL.md                  # Main skill definition
-│       └── references/               # Supporting documentation
-│           ├── network-capture.md
-│           ├── provider-template.md
-│           ├── provider-fields.md
-│           ├── provider-examples.md
-│           └── extension-template-parsing.md
+├── src/
+│   ├── claude/
+│   │   └── create-zkp2p-provider/
+│   │       ├── SKILL.md              # Claude Code skill definition
+│   │       └── references/           # Supporting documentation
+│   └── codex/
+│       └── create-zkp2p-provider/
+│           ├── SKILL.md              # Codex skill definition
+│           └── references/           # Supporting documentation
 ├── scripts/
 │   ├── install-claude.sh            # Install for Claude Code
 │   ├── bundle-claude.sh             # Bundle into single file
@@ -40,16 +40,16 @@ skills/
 ```bash
 ./scripts/install-claude.sh
 ```
-This copies the skill to `~/.claude/skills/zkp2p-provider-template/`.
+This copies the skill to `~/.claude/skills/create-zkp2p-provider/`.
 
 **Option 2: Bundle into single file**
 ```bash
 ./scripts/bundle-claude.sh
 ```
-Creates `dist/claude/zkp2p-provider-template.md` - a self-contained skill file with all references embedded.
+Creates `dist/claude/create-zkp2p-provider.md` - a self-contained skill file with all references embedded.
 
 **Option 3: Manual**
-Copy `src/zkp2p-provider-template/` to your Claude Code skills directory.
+Copy `src/claude/create-zkp2p-provider/` to your Claude Code skills directory.
 
 ### Codex
 
@@ -57,18 +57,18 @@ Copy `src/zkp2p-provider-template/` to your Claude Code skills directory.
 ```bash
 ./scripts/package-codex.sh
 ```
-Creates `dist/codex/zkp2p-provider-template.skill`.
+Creates `dist/codex/create-zkp2p-provider.skill`.
 
 Then install using the Codex skill-installer:
 ```bash
 python3 ~/.codex/skills/.system/skill-installer/scripts/install_skill.py \
-  dist/codex/zkp2p-provider-template.skill
+  dist/codex/create-zkp2p-provider.skill
 ```
 
 **Option 2: Use the Codex skill packaging system**
 ```bash
 python3 ~/.codex/skills/.system/skill-creator/scripts/package_skill.py \
-  src/zkp2p-provider-template \
+  src/codex/create-zkp2p-provider \
   dist/codex
 ```
 
@@ -76,7 +76,7 @@ python3 ~/.codex/skills/.system/skill-creator/scripts/package_skill.py \
 
 Once installed, invoke the skill when:
 - Creating a new ZKP2P provider template
-- Analyzing HAR files or network logs
+- Analyzing network logs
 - Translating API responses into template fields
 
 The skill will guide you through:
@@ -89,7 +89,7 @@ The skill will guide you through:
 ## Development
 
 ### Editing the skill
-Edit files in `src/zkp2p-provider-template/`. The SKILL.md contains the main workflow; references contain detailed documentation.
+Edit files in `src/claude/create-zkp2p-provider/` and `src/codex/create-zkp2p-provider/`. Keep references in sync across both folders.
 
 ### Testing changes
 After editing, rebuild for your platform:

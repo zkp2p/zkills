@@ -8,7 +8,7 @@ For deeper field-by-field guidance, see `provider-fields.md`. For real examples,
 - authLink
 - url
 - method
-- metadata (platform, urlRegex, method, transactionsExtraction)
+- metadata (platform, urlRegex, method; include transactionsExtraction for transaction list UI)
 - paramNames
 - paramSelectors
 - responseMatches
@@ -24,6 +24,7 @@ For deeper field-by-field guidance, see `provider-fields.md`. For real examples,
 - metadata.proofMetadataSelectors
 
 ## Skeleton (trim as needed)
+This skeleton is transaction-list oriented. For identity-only or account-attribute proofs, focus on `responseMatches` and omit `transactionsExtraction` if the runtime allows it.
 ```json
 {
   "actionType": "transfer_example",
@@ -99,7 +100,7 @@ interface ParamSelector {
 - Use JSONPath for JSON responses and XPath for HTML responses.
 - For regex selectors, include capture groups `()`.
 
-## Transaction extraction
+## Transaction extraction (only for transaction list UI)
 ### JSON response
 ```json
 {

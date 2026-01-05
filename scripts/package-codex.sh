@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# Package ZKP2P Provider Template skill for Codex
+# Package Create ZKP2P Provider skill for Codex
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
-SRC_DIR="$REPO_ROOT/src/zkp2p-provider-template"
+SRC_DIR="$REPO_ROOT/src/codex/create-zkp2p-provider"
 DIST_DIR="$REPO_ROOT/dist/codex"
 
-SKILL_NAME="zkp2p-provider-template"
+SKILL_NAME="create-zkp2p-provider"
 OUTPUT="$DIST_DIR/${SKILL_NAME}.skill"
 
-echo "Packaging ZKP2P Provider Template skill for Codex..."
+echo "Packaging Create ZKP2P Provider skill for Codex..."
 
 # Create dist directory
 mkdir -p "$DIST_DIR"
