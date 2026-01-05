@@ -1,6 +1,6 @@
 # Create ZKP2P Provider Skill
 
-This repo hosts the create-zkp2p-provider skill for guiding AI agents to create zkTLS/Reclaim provider templates. The skill works with both **Claude Code** and **Codex**.
+This repo hosts the create-zkp2p-provider skill for guiding AI agents to create zkTLS provider templates for ZKP2P. The skill works with both **Claude Code** and **Codex**.
 
 ## What This Skill Does
 
