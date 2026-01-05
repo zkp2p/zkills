@@ -1,5 +1,5 @@
 Goal (incl. success criteria):
-- Commit and push the latest create-zkp2p-provider skill updates (CSRF replay guidance and Gotchas/Troubleshooting).
+- Move Chrome DevTools approval prompt into step 1 intake for create-zkp2p-provider skill instructions.
 
 Constraints/Assumptions:
 - Follow AGENTS instructions (ledger updates at start and on changes).
@@ -9,21 +9,23 @@ Key decisions:
 - Update both Codex and Claude SKILL.md files and regenerate dist artifacts.
 
 State:
-- Commit created; push rejected because remote has new commits.
+- User approved stashing unrelated changes; need to commit latest updates, rebase on origin/main, push, then restore stash.
 
 Done:
-- Committed changes to Codex/Claude SKILL.md and CONTINUITY.md.
+- Updated Codex/Claude SKILL.md intake to ask for DevTools permission and confirm MCP install in step 1.
+- Updated setup prompt to focus on login/navigation.
+- Rebuilt dist artifacts via `./scripts/bundle-claude.sh` and `./scripts/package-codex.sh`.
 - Added CSRF replay guidance and a Gotchas/Troubleshooting section in both SKILL.md files.
 - Rebuilt dist artifacts via `./scripts/bundle-claude.sh` and `./scripts/package-codex.sh`.
 
 Now:
-- Resolve push rejection (rebase/merge) while preserving unrelated local changes.
+- Commit latest changes, stash unrelated changes, rebase on origin/main, push, then restore stash.
 
 Next:
-- Push updated branch once remote changes are integrated.
+- Confirm push status and summarize.
 
 Open questions (UNCONFIRMED if needed):
-- How should we handle unrelated local changes in `README.md`, `scripts/install-claude.sh`, and `scripts/install-codex.sh` before rebasing/pushing?
+- None.
 
 Working set (files/ids/commands):
 - CONTINUITY.md

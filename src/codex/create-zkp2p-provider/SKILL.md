@@ -20,6 +20,8 @@ Guide users to turn target-platform network requests into a valid ZKP2P provider
 - Resume only after the user confirms installation.
 
 ### 1. Provider intake (first step)
+- Ask for permission to control a Chrome session and access network data with Chrome DevTools MCP.
+- Confirm Chrome DevTools MCP is installed (see Skill installation and setup section).
 - Ask the user to describe the provider they want to build and the general goal.
 - Ask which website/platform (and region, if relevant) they are integrating.
 - Ask if they already know where the data appears (list UI, detail page, profile/settings).
@@ -27,17 +29,18 @@ Guide users to turn target-platform network requests into a valid ZKP2P provider
 
 Use this intake prompt (send to the user):
 ```
+I can use Chrome DevTools to control a browser session and capture network requests. Is it OK if I do that?
+Before we continue, confirm Chrome DevTools MCP is installed (see Skill installation and setup section).
 Tell me what provider you want to build and which platform/region (if relevant). If you already know where the data appears (list, detail, profile/settings), mention it; we can refine details after capture.
 ```
 
 ### 2. Required setup (login and context)
-- Confirm Chrome DevTools MCP is installed (see Skill installation and setup section).
 - Ask the user to log in and navigate to the relevant pages; capture requests as they browse.
 - If the platform or flow is not yet known, ask them to show where the data appears; once they provide enough detail, start intercepting network requests.
 
 Use this setup prompt (send to the user):
 ```
-Before we continue, confirm Chrome DevTools MCP is installed (see Skill installation and setup section). Then log in to the platform and start navigating to the page with the data; I'll begin intercepting requests as you browse.
+Great — please log in to the platform and start navigating to the page with the data. I'll capture requests as you browse.
 ```
 
 ### 3. Capture request(s)
