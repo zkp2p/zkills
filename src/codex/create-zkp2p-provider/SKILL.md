@@ -20,26 +20,24 @@ Guide users to turn target-platform network requests into a valid ZKP2P provider
 - Resume only after the user confirms installation.
 
 ### 1. Provider intake (first step)
-- Ask the user to describe the provider they want to build.
-- Ask which option applies: (1) payment/transaction provider or (2) something else (identity/account/other).
-- Ask which website/platform and region they are integrating.
-- Ask the use case and the exact proof fields required (e.g., identity/username, account status, account ID, transaction details).
-- Ask what the proof should attest (example: "user owns Venmo @handle").
-- Ask if the data appears in a list UI, a detail page, or a profile/settings page.
-- If it's a payment transaction, the goal is to mirror the structure of reference transaction templates in `references/provider-examples.md`.
+- Ask the user to describe the provider they want to build and the general goal.
+- Ask which website/platform (and region, if relevant) they are integrating.
+- Ask if they already know where the data appears (list UI, detail page, profile/settings).
+- Keep intake lightweight; you can refine specifics after capture.
 
 Use this intake prompt (send to the user):
 ```
-Describe the provider you want to build. Is it (1) a payment/transaction provider or (2) something else (identity/account/other)? Which website/platform and region? What exact fields must be proven, and what should the proof attest? Where does the data appear (list, detail, profile/settings)?
+Tell me what provider you want to build and which platform/region (if relevant). If you already know where the data appears (list, detail, profile/settings), mention it; we can refine details after capture.
 ```
 
 ### 2. Required setup (login and context)
 - Confirm Chrome DevTools MCP is installed (see Skill installation and setup section).
-- If the platform or flow is not yet known, ask the user to log in to the site and describe where the proof data appears; once they provide enough detail, start intercepting network requests.
+- Ask the user to log in and navigate to the relevant pages; capture requests as they browse.
+- If the platform or flow is not yet known, ask them to show where the data appears; once they provide enough detail, start intercepting network requests.
 
 Use this setup prompt (send to the user):
 ```
-Before we continue, confirm Chrome DevTools MCP is installed (see Skill installation and setup section). Then log in to the platform and tell me which page shows the required data; once you're there, I'll begin intercepting requests.
+Before we continue, confirm Chrome DevTools MCP is installed (see Skill installation and setup section). Then log in to the platform and start navigating to the page with the data; I'll begin intercepting requests as you browse.
 ```
 
 ### 3. Capture request(s)
@@ -50,15 +48,26 @@ Before we continue, confirm Chrome DevTools MCP is installed (see Skill installa
 ### 4. Identify candidate request(s)
 - Prefer the endpoint that returns the required proof fields (list, detail, profile, or settings).
 - Verify response type (JSON vs HTML) to choose JSONPath vs XPath extraction.
+ - For payment platforms, check platform docs (and unofficial API references) to discover API domains/endpoints to watch for in capture. Example: Monzo uses `api.monzo`, called with the UI session cookie.
 
-### 5. Map fields to selectors
+### 5. Clarify endpoints and exploration
+- Ask if there are other pages or endpoints worth exploring before locking on the request.
+- If this is a payment/transaction proof, prompt the user to open a transaction list/history and then a specific transaction detail.
+- Capture both list and detail endpoints; the list metadata URL can differ from the proof endpoint for a specific transaction (e.g., Wise).
+
+Use this clarification prompt (send to the user):
+```
+Are there other pages or tabs we should explore before we lock onto an endpoint? If this is a payment proof, please open a transaction list/history and then click a specific transaction so we can capture both list and detail requests.
+```
+
+### 6. Map fields to selectors
 - Define `paramNames` and `paramSelectors` for dynamic parameters used in `url`/`body`.
 - Define `responseMatches` to validate proof fields.
 - If the flow requires a list UI for user selection, define `transactionsExtraction` selectors; otherwise confirm whether it can be omitted.
 - Flag sensitive headers and add `responseRedactions`.
 - For fields from multiple sources, use appropriate `paramSelectors.source` values.
 
-### 6. Assemble the template
+### 7. Assemble the template
 - Fill required top-level fields (`actionType`, `proofEngine`, `authLink`, `url`, `method`, `metadata`).
 - Set `actionType` to reflect the use case (identity, account, transaction).
 - Set `proofEngine` to `"reclaim"` for new templates.
@@ -66,8 +75,16 @@ Before we continue, confirm Chrome DevTools MCP is installed (see Skill installa
 - When possible, align choices with patterns in `references/provider-examples.md` (especially for payment/transaction templates).
 - For multi-request flows, configure `additionalProofs` or `metadataUrl`.
 
-### 7. Validate and iterate
+### 8. Test in the developer portal
+- Assumes the user has already cloned the providers repo locally.
+- Have the user test on `https://developer.zkp2p.xyz`.
+- Ask them to install the PeerAuth extension: `https://chromewebstore.google.com/detail/peerauth-authenticate-and/ijpgccednehjpeclfcllnjjcmiohdjih`.
+- In the developer settings dropdown, set the Providers URL to `http://localhost:8080`.
+
+### 9. Validate and iterate
+- Use Chrome DevTools MCP to open a fresh browser window/session, have the user log in, and re-run the flow to confirm the endpoint is captured.
 - Test in the providers dev flow (see docs in `references/provider-template.md`).
+- If replay fails due to CSRF/nonce tokens, have the user re-run the action in the page and re-capture the request (avoid manual replay of stale requests).
 - Tighten `urlRegex`, add `fallbackUrlRegex`, and refine selectors based on failures.
 
 ---
@@ -146,8 +163,15 @@ When you suspect multiple sources are needed, ask:
 
 ---
 
+## Gotchas and troubleshooting
+- Some endpoints require CSRF/one-time tokens; always re-trigger the request in-page to refresh tokens before capture.
+- Transaction list metadata and transaction detail proof endpoints can differ; capture both.
+- If response bodies are missing/obfuscated, try a different request or navigate to another page that loads the same data.
+- HTML responses require XPath selectors; JSON responses use JSONPath.
+
 ## Output expectations
 - Default to producing a JSON template file (ask for `{platform}/{provider}.json` name if not provided).
+- For payment/transaction providers, default to `{platform}/transfer_platform.json`.
 - Provide a short mapping table: source field -> JSONPath/XPath/regex.
 - Call out missing data in the capture and ask for additional requests.
 - Note any fields that require multi-source extraction.
