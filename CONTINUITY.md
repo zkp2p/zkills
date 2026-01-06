@@ -18,12 +18,14 @@ Done:
 - Synced `/home/ubuntu/.codex/skills/create-zkp2p-provider/SKILL.md` to match the updated skill.
 - Updated `src/claude/create-zkp2p-provider/SKILL.md` for parity with the Codex version.
 - Updated `README.md` with Codex/Claude installation prerequisites and restart guidance, and fixed Codex option numbering.
+- Rebased on `origin/main`, resolved conflict in `src/codex/create-zkp2p-provider/SKILL.md`, and pushed `main`.
+- Noted remote message that the repo moved to `git@github.com:zkp2p/zkills.git`.
 
 Now:
-- Prepare and push changes to `main`.
+- Await user response.
 
 Next:
-- Confirm push result.
+- None.
 
 Open questions (UNCONFIRMED if needed):
 - None.
