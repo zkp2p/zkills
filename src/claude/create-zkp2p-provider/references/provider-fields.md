@@ -78,6 +78,7 @@ This reference expands on the official "Build a New Provider" doc with field-by-
   - transactionXPathListSelector: XPath that selects each transaction row.
   - transactionXPathSelectors: XPath per field.
 - Use: Only one of JSONPath or XPath lists is needed; choose based on response type.
+- Recipient identifiers: In `transaction*Selectors`, ensure `recipient` is a unique, stable identifier. If the platform allows changes, confirm changes invalidate payments (safe) rather than redirect funds (e.g., a Zelle email change invalidates the payment).
 
 ### proofMetadataSelectors (optional)
 - Purpose: Additional selectors whose values are included in the proof metadata.

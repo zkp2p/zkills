@@ -18,7 +18,7 @@ mkdir -p "$DIST_DIR"
 cat > "$OUTPUT" << 'HEADER'
 # Create ZKP2P Provider Skill
 
-> Create or update ZKP2P provider templates (zkTLS/Reclaim) by capturing payment-platform network requests, mapping transaction fields (amount, date, recipient, status/currency), and producing the JSON provider template.
+> Create or update ZKP2P provider templates (zkTLS/Reclaim) by capturing target-platform network requests, mapping user-specified proof fields (identity, account attributes, or transactions), and producing the JSON provider template.
 
 HEADER
 

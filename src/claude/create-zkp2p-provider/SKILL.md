@@ -7,10 +7,11 @@ description: Create or update ZKP2P provider templates (zkTLS/Reclaim) by captur
 
 ## Overview
 Guide users to turn target-platform network requests into a valid ZKP2P provider JSON template with safe redaction and testable extraction rules.
+This is an iterative, website-specific process; expect back-and-forth capture/debug and use network access to consult platform docs or unofficial API references when needed.
 
 ## Skill installation and setup (Chrome DevTools MCP)
 - Required before first use. Do not attempt capture until the user confirms it is installed.
-- Install Chrome DevTools MCP in Claude Code: `claude mcp add chrome-devtools npx chrome-devtools-mcp@latest`.
+- Install Chrome DevTools MCP in Claude Code: `claude mcp add chrome-devtools -- npx chrome-devtools-mcp@latest`.
 - If any MCP call fails because Chrome DevTools MCP is not connected, pause and have the user install it first, then retry.
 
 ## Workflow
@@ -25,6 +26,7 @@ Guide users to turn target-platform network requests into a valid ZKP2P provider
 - Ask the user to describe the provider they want to build and the general goal.
 - Ask which website/platform (and region, if relevant) they are integrating.
 - Ask if they already know where the data appears (list UI, detail page, profile/settings).
+- For payment platforms, ask how recipients are identified (email/phone/handle/internal ID) and whether those identifiers are mutable.
 - Keep intake lightweight; you can refine specifics after capture.
 
 Use this intake prompt (send to the user):
@@ -37,6 +39,7 @@ Tell me what provider you want to build and which platform/region (if relevant).
 ### 2. Required setup (login and context)
 - Ask the user to log in and navigate to the relevant pages; capture requests as they browse.
 - If the platform or flow is not yet known, ask them to show where the data appears; once they provide enough detail, start intercepting network requests.
+- Expect multiple rounds of navigation and capture; prompt the user to move through the UI while you refine selectors and re-capture as needed.
 
 Use this setup prompt (send to the user):
 ```
@@ -51,7 +54,7 @@ Great — please log in to the platform and start navigating to the page with th
 ### 4. Identify candidate request(s)
 - Prefer the endpoint that returns the required proof fields (list, detail, profile, or settings).
 - Verify response type (JSON vs HTML) to choose JSONPath vs XPath extraction.
- - For payment platforms, check platform docs (and unofficial API references) to discover API domains/endpoints to watch for in capture. Example: Monzo uses `api.monzo`, called with the UI session cookie.
+ - For payment platforms, check platform docs (and unofficial API references) to discover API domains/endpoints to watch for in capture. Use network access as needed to read docs and verify endpoints. Example: Monzo uses `api.monzo`, called with the UI session cookie.
 
 ### 5. Clarify endpoints and exploration
 - Ask if there are other pages or endpoints worth exploring before locking on the request.
@@ -69,6 +72,7 @@ Are there other pages or tabs we should explore before we lock onto an endpoint?
 - If the flow requires a list UI for user selection, define `transactionsExtraction` selectors; otherwise confirm whether it can be omitted.
 - Flag sensitive headers and add `responseRedactions`.
 - For fields from multiple sources, use appropriate `paramSelectors.source` values.
+- For payment flows, ensure the recipient identifier is unique and immutable. If it can change, confirm changes invalidate payments (safe) rather than redirect funds.
 
 ### 7. Assemble the template
 - Fill required top-level fields (`actionType`, `proofEngine`, `authLink`, `url`, `method`, `metadata`).
@@ -79,7 +83,7 @@ Are there other pages or tabs we should explore before we lock onto an endpoint?
 - For multi-request flows, configure `additionalProofs` or `metadataUrl`.
 
 ### 8. Test in the developer portal
-- Assumes the user has already cloned the providers repo locally.
+- Confirm the user has already cloned the providers repo locally.
 - Have the user test on `https://developer.zkp2p.xyz`.
 - Ask them to install the PeerAuth extension: `https://chromewebstore.google.com/detail/peerauth-authenticate-and/ijpgccednehjpeclfcllnjjcmiohdjih`.
 - In the developer settings dropdown, set the Providers URL to `http://localhost:8080`.

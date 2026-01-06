@@ -29,7 +29,7 @@ if ! command -v claude >/dev/null 2>&1; then
   echo "Error: 'claude' command not found. Install Claude Code CLI to add MCP." >&2
   exit 1
 fi
-if claude mcp add chrome-devtools npx chrome-devtools-mcp@latest; then
+if claude mcp add chrome-devtools -- npx chrome-devtools-mcp@latest; then
   echo "Chrome DevTools MCP installed."
 else
   echo "Warning: Chrome DevTools MCP install failed or already installed; verify with 'claude mcp list'." >&2

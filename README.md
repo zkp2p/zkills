@@ -1,6 +1,6 @@
 # Create ZKP2P Provider Skill
 
-This repo hosts the create-zkp2p-provider skill for guiding AI agents to create zkTLS provider templates for ZKP2P. The skill works with both **Claude Code** and **Codex**.
+This repo hosts the create-zkp2p-provider skill for guiding AI agents to create zkTLS/Reclaim provider templates. The skill works with both **Claude Code** and **Codex**.
 
 ## What This Skill Does
 
@@ -40,7 +40,7 @@ skills/
 ```bash
 ./scripts/install-claude.sh
 ```
-This copies the skill to `~/.claude/skills/create-zkp2p-provider/` and installs Chrome DevTools MCP.
+This copies the skill to `~/.claude/skills/create-zkp2p-provider/`.
 
 **Option 2: Bundle into single file**
 ```bash
@@ -53,17 +53,33 @@ Copy `src/claude/create-zkp2p-provider/` to your Claude Code skills directory.
 
 ### Codex
 
-**Option 1: Install skill directory**
+**Option 1: Local install (fastest)**
 ```bash
-./scripts/install-codex.sh
+CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+mkdir -p "$CODEX_HOME/skills"
+rm -rf "$CODEX_HOME/skills/create-zkp2p-provider"
+cp -r src/codex/create-zkp2p-provider "$CODEX_HOME/skills/create-zkp2p-provider"
 ```
-This copies the skill to `~/.codex/skills/create-zkp2p-provider/` and installs Chrome DevTools MCP.
 
-**Option 2: Package for distribution**
+**Option 2: Package and install**
 ```bash
 ./scripts/package-codex.sh
 ```
 Creates `dist/codex/create-zkp2p-provider.skill`.
+
+Then unpack into your Codex skills directory:
+```bash
+CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+mkdir -p "$CODEX_HOME/skills"
+unzip -o dist/codex/create-zkp2p-provider.skill -d "$CODEX_HOME/skills"
+```
+
+**Option 2: Use the Codex skill packaging system**
+```bash
+python3 ~/.codex/skills/.system/skill-creator/scripts/package_skill.py \
+  src/codex/create-zkp2p-provider \
+  dist/codex
+```
 
 ## Usage
 
