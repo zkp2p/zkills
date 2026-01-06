@@ -67,10 +67,13 @@ Are there other pages or tabs we should explore before we lock onto an endpoint?
 ### 6. Map fields to selectors
 - Define `paramNames` and `paramSelectors` for dynamic parameters used in `url`/`body`.
 - Define `responseMatches` to validate proof fields.
+- For regex `responseMatches`, use single-escaped patterns (one JSON-escape layer); avoid double-escaped strings like `\\\"`.
 - If the flow requires a list UI for user selection, define `transactionsExtraction` selectors; otherwise confirm whether it can be omitted.
 - Flag sensitive headers and add `responseRedactions`.
+- Keep `responseRedactions` scoped to the same response object as `responseMatches`; for list responses, use `{{INDEX}}` so redactions align with the selected item.
 - For fields from multiple sources, use appropriate `paramSelectors.source` values.
 - For payment flows, confirm recipient identifier stability via docs/help/FAQ using network access; explain the implications to the user. If the identifier is mutable or unclear, prefer a stable internal ID or add a second proof source. Do not ask the user to guess stability; only ask them to point to where the identifier appears in the UI if needed.
+- For payment platforms, require only: recipient ID, amount, timestamp, and status (reversible vs settled); include currency when the platform supports multiple currencies. Ask where recipient IDs appear (can be multiple places) and whether amount is split into cents/dollars.
 
 ### 7. Assemble the template
 - Fill required top-level fields (`actionType`, `proofEngine`, `authLink`, `url`, `method`, `metadata`).
@@ -142,6 +145,7 @@ When you suspect multiple sources are needed, ask:
 2. "Does clicking an item load additional details? If so, capture that request too."
 3. "Is status/verification shown somewhere else? Which request contains it?"
 4. "Capture 2-3 different requests if you're unsure which has all the fields."
+5. "For payment platforms: where do recipient ID, amount (cents vs dollars), timestamp, status (reversible/settled), and currency (if multi-currency) appear?"
 
 ### Template fields for multi-source extraction
 
@@ -177,6 +181,7 @@ When you suspect multiple sources are needed, ask:
 ## Output expectations
 - Default to producing a JSON template file (ask for `{platform}/{provider}.json` name if not provided).
 - For payment/transaction providers, default to `{platform}/transfer_platform.json`.
+- For payment platforms, confirm the required field set (recipient ID, amount, timestamp, status; currency if multi-currency), avoid extra fields unless the user asks, and document any multi-source or split-amount handling.
 - Provide a short mapping table: source field -> JSONPath/XPath/regex.
 - Call out missing data in the capture and ask for additional requests.
 - Note any fields that require multi-source extraction.

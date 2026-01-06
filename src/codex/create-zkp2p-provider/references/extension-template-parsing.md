@@ -139,4 +139,5 @@ Each extracted row includes fields like:
 - Avoid missing fields; any missing field will mark the row as hidden.
 - Use capture groups in regex selectors if you want only a specific value.
 - Do not rely on `{{INDEX}}` in `responseMatches`; it is not interpolated there.
+- Keep `responseRedactions` scoped to the same response object as `responseMatches`; use `{{INDEX}}` for list responses.
 - If you use `metadataUrl`, confirm same-host HTTPS, and remember body is not interpolated.

@@ -1,38 +1,43 @@
 Goal (incl. success criteria):
-- Clean up the create-zkp2p-provider skill instructions to remove unnecessary early questions, proactively install Chrome DevTools MCP, and ensure the flow tells users to restart Codex when installing; success is updated skill docs reflecting this behavior.
+- Push the updated create-zkp2p-provider guidance (single-escape responseMatches regex, aligned responseRedactions scope, payment-platform required fields) to `main`; success is committed and pushed changes.
 
 Constraints/Assumptions:
 - Follow AGENTS instructions (ledger updates at start and on changes).
-- Update the relevant skill file(s) without reverting unrelated local changes.
-- Use create-zkp2p-provider and skill-installer workflows for guidance.
+- Keep `src/codex` and `src/claude` references in sync.
+- Update relevant skill docs without reverting unrelated local changes.
+- Use create-zkp2p-provider workflow guidance.
 
 Key decisions:
-- Updated both the repo copy and the installed `~/.codex/skills` copy for immediate behavior change.
+- UNCONFIRMED: Whether to sync installed `~/.codex/skills/create-zkp2p-provider` after source updates.
 
 State:
-- Prior conflict resolution work is complete (see Done).
+- In progress; ready to commit and push changes to main.
 
 Done:
 - Read ledger at start of this turn.
-- Updated `src/codex/create-zkp2p-provider/SKILL.md` to reduce upfront questions, enforce MCP install+restart guidance, and add recipient ID stability context with web research.
-- Synced `/home/ubuntu/.codex/skills/create-zkp2p-provider/SKILL.md` to match the updated skill.
-- Updated `src/claude/create-zkp2p-provider/SKILL.md` for parity with the Codex version.
-- Updated `README.md` with Codex/Claude installation prerequisites and restart guidance, and fixed Codex option numbering.
-- Rebased on `origin/main`, resolved conflict in `src/codex/create-zkp2p-provider/SKILL.md`, and pushed `main`.
-- Noted remote message that the repo moved to `git@github.com:zkp2p/zkills.git`.
+- Updated Codex/Claude SKILL workflow guidance for single-escape responseMatches regex, aligned responseRedactions scope, and payment-platform minimum field checklist.
+- Updated Codex/Claude references: provider-fields, provider-template, provider-examples, extension-template-parsing, and network-capture with the new rules and aligned examples.
 
 Now:
-- Await user response.
+- Commit and push the updated skill docs/references to main.
 
 Next:
-- None.
+- (Optional) Rebuild dist artifacts and/or sync `~/.codex/skills/create-zkp2p-provider` if requested.
 
 Open questions (UNCONFIRMED if needed):
-- None.
+- Should the installed Codex skill copy in `~/.codex/skills/create-zkp2p-provider` be updated after changes?
 
 Working set (files/ids/commands):
 - CONTINUITY.md
 - src/codex/create-zkp2p-provider/SKILL.md
-- /home/ubuntu/.codex/skills/create-zkp2p-provider/SKILL.md
 - src/claude/create-zkp2p-provider/SKILL.md
-- README.md
+- src/codex/create-zkp2p-provider/references/provider-fields.md
+- src/claude/create-zkp2p-provider/references/provider-fields.md
+- src/codex/create-zkp2p-provider/references/provider-examples.md
+- src/claude/create-zkp2p-provider/references/provider-examples.md
+- src/codex/create-zkp2p-provider/references/provider-template.md
+- src/claude/create-zkp2p-provider/references/provider-template.md
+- src/codex/create-zkp2p-provider/references/extension-template-parsing.md
+- src/claude/create-zkp2p-provider/references/extension-template-parsing.md
+- src/codex/create-zkp2p-provider/references/network-capture.md
+- src/claude/create-zkp2p-provider/references/network-capture.md

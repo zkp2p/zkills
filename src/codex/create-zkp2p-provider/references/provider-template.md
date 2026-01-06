@@ -77,7 +77,7 @@ This skeleton is transaction-list oriented. For identity-only or account-attribu
     }
   ],
   "responseRedactions": [
-    {"jsonPath": "$.data.user.email"}
+    {"jsonPath": "$.data.transactions[{{INDEX}}].memo"}
   ],
   "mobile": {
     "includeAdditionalCookieDomains": [],
@@ -137,6 +137,8 @@ interface ParamSelector {
 - Use `shouldReplayRequestInPage: true` when the request must be made in the page context.
 - Keep `urlRegex` specific and escaped to avoid false matches.
 - Add `responseRedactions` for PII and never include secrets in `responseMatches`.
+- Keep `responseRedactions` scoped to the same object as `responseMatches`; use `{{INDEX}}` for list responses.
+- Use single-escaped regex patterns in `responseMatches`; unescape once if you copied a double-escaped string.
 
 ## Quick test (from docs)
 - Run the providers repo (`yarn install`, `yarn start`) and set the extension Base URL to `http://localhost:8080/`.

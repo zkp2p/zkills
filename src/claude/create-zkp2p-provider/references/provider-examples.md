@@ -31,13 +31,13 @@ Source: `venmo/transfer_venmo.json`
     {"type": "jsonPath", "value": "$.stories[{{INDEX}}].title.sender.id"}
   ],
   "responseMatches": [
-    {"type": "regex", "value": "\\\"amount\\\":\\\"- \\\\\$(?<amount>[^\\\"]+)\\\""}
+    {"type": "regex", "value": "\"amount\":\"- \\$(?<amount>[^\"]+)\""}
   ]
 }
 ```
 Notes:
 - Uses JSONPath extraction for list views.
-- Regex responseMatches bind proof values.
+- Regex responseMatches bind proof values; use single-escaped patterns.
 - Full file includes mobile login selectors and response redactions.
 
 ## N26 (GraphQL POST + replay in page + userInput)

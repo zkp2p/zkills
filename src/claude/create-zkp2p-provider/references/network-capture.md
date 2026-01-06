@@ -77,6 +77,8 @@ Note which proof fields map to the requests. Examples:
 | amount | Optional | Only if proving a transaction |
 | date | Optional | Only if proving a transaction |
 
+Payment platforms: require only recipient ID, amount, timestamp, and status (reversible vs settled); include currency if multi-currency. Ask if recipient IDs appear in multiple places and whether amount is split into cents/dollars.
+
 ---
 
 ## Redaction guidance

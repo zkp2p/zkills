@@ -79,6 +79,7 @@ This reference expands on the official "Build a New Provider" doc with field-by-
   - transactionXPathSelectors: XPath per field.
 - Use: Only one of JSONPath or XPath lists is needed; choose based on response type.
 - Recipient identifiers: In `transaction*Selectors`, ensure `recipient` is a unique, stable identifier. If the platform allows changes, confirm changes invalidate payments (safe) rather than redirect funds (e.g., a Zelle email change invalidates the payment).
+- Payment platforms: Require only recipient ID, amount, timestamp, and status (reversible vs settled); include currency if multi-currency. Ask if recipient IDs appear in multiple places and whether amount is split into cents/dollars.
 
 ### proofMetadataSelectors (optional)
 - Purpose: Additional selectors whose values are included in the proof metadata.
@@ -113,12 +114,14 @@ This reference expands on the official "Build a New Provider" doc with field-by-
   - value: selector/pattern
   - hash: optional boolean
 - Use: Keep matches minimal for performance; never include secrets in responseMatches.
+- Regex escaping: Use single-escaped patterns (one JSON-escape layer); if copied from stringified JSON/logs, unescape once before using.
 
 ### responseRedactions (optional)
 - Purpose: Remove PII or sensitive fields from the response.
 - Fields:
   - jsonPath or xPath
 - Use: Redact user identifiers, tokens, or unrelated data while keeping required proof fields intact.
+- Scope: Keep redactions in the same response object as `responseMatches`; for list responses, include `{{INDEX}}` to align redactions with the selected item.
 
 ## Mobile SDK (optional)
 
