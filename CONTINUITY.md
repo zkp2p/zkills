@@ -11,15 +11,16 @@ Key decisions:
 - UNCONFIRMED: Whether to sync installed `~/.codex/skills/create-zkp2p-provider` after source updates.
 
 State:
-- In progress; ready to commit and push changes to main.
+- Complete; changes committed and pushed to main.
 
 Done:
 - Read ledger at start of this turn.
 - Updated Codex/Claude SKILL workflow guidance for single-escape responseMatches regex, aligned responseRedactions scope, and payment-platform minimum field checklist.
 - Updated Codex/Claude references: provider-fields, provider-template, provider-examples, extension-template-parsing, and network-capture with the new rules and aligned examples.
+- Committed and pushed changes to `main`.
 
 Now:
-- Commit and push the updated skill docs/references to main.
+- Await follow-up requests.
 
 Next:
 - (Optional) Rebuild dist artifacts and/or sync `~/.codex/skills/create-zkp2p-provider` if requested.
