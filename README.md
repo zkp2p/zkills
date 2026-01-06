@@ -71,30 +71,8 @@ After installing the skill, restart Claude Code if you just added Chrome DevTool
 
 **Option 1: Local install (fastest)**
 ```bash
-CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
-mkdir -p "$CODEX_HOME/skills"
-rm -rf "$CODEX_HOME/skills/create-zkp2p-provider"
-cp -r src/codex/create-zkp2p-provider "$CODEX_HOME/skills/create-zkp2p-provider"
-```
-
-**Option 2: Package and install**
-```bash
-./scripts/package-codex.sh
-```
-Creates `dist/codex/create-zkp2p-provider.skill`.
-
-Then unpack into your Codex skills directory:
-```bash
-CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
-mkdir -p "$CODEX_HOME/skills"
-unzip -o dist/codex/create-zkp2p-provider.skill -d "$CODEX_HOME/skills"
-```
-
-**Option 3: Use the Codex skill packaging system**
-```bash
-python3 ~/.codex/skills/.system/skill-creator/scripts/package_skill.py \
-  src/codex/create-zkp2p-provider \
-  dist/codex
+codex
+$skill-installer https://github.com/zkp2p/zkills/tree/main/src/codex/create-zkp2p-provider
 ```
 
 After installing the skill, restart Codex if you just added Chrome DevTools MCP.
