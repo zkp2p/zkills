@@ -1,33 +1,36 @@
 Goal (incl. success criteria):
-- Resolve stash conflicts by keeping local README/CONTINUITY content and leave the repo with no conflicted files.
+- Clean up the create-zkp2p-provider skill instructions to remove unnecessary early questions, proactively install Chrome DevTools MCP, and ensure the flow tells users to restart Codex when installing; success is updated skill docs reflecting this behavior.
 
 Constraints/Assumptions:
 - Follow AGENTS instructions (ledger updates at start and on changes).
-- Keep unrelated local changes unless explicitly asked to revert.
+- Update the relevant skill file(s) without reverting unrelated local changes.
+- Use create-zkp2p-provider and skill-installer workflows for guidance.
 
 Key decisions:
-- Use stashed (local) versions of `CONTINUITY.md` and `README.md` to resolve conflicts.
+- Updated both the repo copy and the installed `~/.codex/skills` copy for immediate behavior change.
 
 State:
-- Conflicts resolved; `CONTINUITY.md` and `README.md` updated with stashed versions and staged.
-- Skill update commit `cb232b5` already pushed to `origin/main`.
+- Prior conflict resolution work is complete (see Done).
 
 Done:
-- Pushed DevTools-intake update to `origin/main`.
-- Applied stash and selected stashed versions for `CONTINUITY.md` and `README.md`.
-- Dropped the applied stash entry.
+- Read ledger at start of this turn.
+- Updated `src/codex/create-zkp2p-provider/SKILL.md` to reduce upfront questions, enforce MCP install+restart guidance, and add recipient ID stability context with web research.
+- Synced `/home/ubuntu/.codex/skills/create-zkp2p-provider/SKILL.md` to match the updated skill.
+- Updated `src/claude/create-zkp2p-provider/SKILL.md` for parity with the Codex version.
+- Updated `README.md` with Codex/Claude installation prerequisites and restart guidance, and fixed Codex option numbering.
 
 Now:
-- Decide whether to commit `README.md`/`CONTINUITY.md` changes or leave them local.
+- Prepare and push changes to `main`.
 
 Next:
-- None.
+- Confirm push result.
 
 Open questions (UNCONFIRMED if needed):
-- Should the local `README.md` updates be committed?
+- None.
 
 Working set (files/ids/commands):
 - CONTINUITY.md
+- src/codex/create-zkp2p-provider/SKILL.md
+- /home/ubuntu/.codex/skills/create-zkp2p-provider/SKILL.md
+- src/claude/create-zkp2p-provider/SKILL.md
 - README.md
-- git stash pop
-- git stash drop stash@{0}

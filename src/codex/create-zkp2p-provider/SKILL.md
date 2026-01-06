@@ -7,25 +7,31 @@ description: Create or update ZKP2P provider templates (zkTLS) by capturing targ
 
 ## Overview
 Guide users to turn target-platform network requests into a valid ZKP2P provider JSON template with safe redaction and testable extraction rules.
-This is an iterative, website-specific process; expect back-and-forth capture/debug and use network access to consult platform docs or unofficial API references when needed.
+This is an iterative, website-specific process; expect back-and-forth capture/debug and actively consult platform docs or unofficial API references as needed. Use docs to determine whether recipient identifiers (handles/usernames) are stable or mutable and explain the implications to the user rather than asking them to guess.
 
 ## Skill installation and setup (Chrome DevTools MCP)
-- Required before first use. Attempt capture to see if Chrome Devtools MCP is installed. 
-- If any MCP call fails because Chrome DevTools MCP is not connected, install it in Codex: `codex mcp add chrome-devtools -- npx chrome-devtools-mcp@latest` and then retry.
+- Required before first use. Do not attempt capture until it is installed.
+- If missing or MCP tools are unavailable, install Chrome DevTools MCP in Codex yourself: `codex mcp add chrome-devtools -- npx chrome-devtools-mcp@latest`.
+- If you just installed it, tell the user to restart Codex so the MCP server is loaded, then continue once they confirm the restart.
+- Do not ask the user to run the install command.
 
 ## Workflow
 
 ### 0) If Chrome DevTools MCP is not connected, set it up first
-- If any MCP call fails because Chrome DevTools MCP is not connected, install it in Codex: `codex mcp add chrome-devtools -- npx chrome-devtools-mcp@latest` and then retry.
+- If any MCP call fails because Chrome DevTools MCP is not connected, install it using the Skill installation and setup section.
+- Resume only after the user confirms a Codex restart.
 
 ### 1. Provider intake (first step)
 - Take user input from the initial skill call and answer the following questions if already provided.
 - Ask for permission to control a Chrome session and access network data with Chrome DevTools MCP.
-- Ask the user to describe the provider they want to build and the general goal.
-- Ask which website/platform they are integrating.
-- Ask if they already know where the data appears (list UI, detail page, profile/settings).
-- Keep intake lightweight; you can refine specifics after capture.
+- Ask which website/platform (and region only if it materially changes the flow) they are integrating, and where the data appears (list UI, detail page, profile/settings).
+- Keep intake to 1-2 questions; defer proof-field specifics until after capture.
 
+Use this intake prompt (send to the user):
+```
+I can use Chrome DevTools to control a browser session and capture network requests. Is it OK if I do that?
+Which platform are we targeting, and where in the UI does the data appear (list, detail, profile/settings)? If region changes the flow, mention it.
+```
 ### 2. Required setup (login and context)
 - Once user has provided the website and context, open a new Chrome window and log in to the platform.
 - Ask the user to log in and navigate to the relevant pages; capture requests as they browse.
@@ -41,6 +47,7 @@ Great — please log in to the platform and start navigating to the page with th
 - Ask for captured network requests from the MCP session. If not available, direct them to `references/network-capture.md` and request a sanitized capture.
 - Request at least one request/response that includes the required proof fields.
 - **Check if multiple requests are needed** (see "Handling Multiple Data Sources" below).
+- If required proof fields were not specified, confirm them after you see candidate responses.
 
 ### 4. Identify candidate request(s)
 - Prefer the endpoint that returns the required proof fields (list, detail, profile, or settings).
@@ -63,7 +70,7 @@ Are there other pages or tabs we should explore before we lock onto an endpoint?
 - If the flow requires a list UI for user selection, define `transactionsExtraction` selectors; otherwise confirm whether it can be omitted.
 - Flag sensitive headers and add `responseRedactions`.
 - For fields from multiple sources, use appropriate `paramSelectors.source` values.
-- For payment flows, ensure the recipient identifier is unique and immutable. If it can change, confirm changes invalidate payments (safe) rather than redirect funds.
+- For payment flows, confirm recipient identifier stability via docs/help/FAQ using network access; explain the implications to the user. If the identifier is mutable or unclear, prefer a stable internal ID or add a second proof source. Do not ask the user to guess stability; only ask them to point to where the identifier appears in the UI if needed.
 
 ### 7. Assemble the template
 - Fill required top-level fields (`actionType`, `proofEngine`, `authLink`, `url`, `method`, `metadata`).
@@ -91,10 +98,11 @@ Are there other pages or tabs we should explore before we lock onto an endpoint?
 Chrome DevTools MCP must be installed before capture (see Skill installation and setup section). Use it to capture network requests directly (see `references/network-capture.md`).
 
 Use an interactive flow:
+- Ask for permission to control a Chrome session and access network data.
 - Ask the user to log in to the target platform in the opened browser (if the platform/flow is not yet known, ask them to show where the data lives before intercepting).
 - After login, tell the user to start browsing and navigate to the page that contains the proof fields.
-- Ask: "Which page should I click to reach the relevant data (profile, settings, history, transactions)?" and follow their suggested path.
-- Ask: "Are there other pages or tabs I should click to reveal the required fields?"
+- If they did not already specify where the data lives, ask: "Which page should I click to reach the relevant data (profile, settings, history, transactions)?" and follow their suggested path.
+- Ask: "Are there other pages or tabs I should click to reveal the required fields?" only if needed.
 - Navigate the flow and trigger the relevant requests.
 - Use `list_network_requests` to locate candidate requests and `get_network_request` (by `reqid`) to retrieve details.
 - If response bodies are missing or obfuscated, ask for an alternate request or a different page to click.
@@ -164,7 +172,7 @@ When you suspect multiple sources are needed, ask:
 - Transaction list metadata and transaction detail proof endpoints can differ; capture both.
 - If response bodies are missing/obfuscated, try a different request or navigate to another page that loads the same data.
 - HTML responses require XPath selectors; JSON responses use JSONPath.
-- Recipient IDs must be unique. It is platform dependent, so provide additional context to the user. For payment platforms, check platform docs (and unofficial API references) to discover API domains/endpoints to watch for in capture. Use network access as needed to read docs and verify endpoints. Example: Monzo uses `api.monzo`, called with the UI session cookie.
+- Recipient IDs must be unique; use platform docs to confirm handle stability and explain implications to the user. Prefer stable internal IDs or additional proofs when handles can change.
 
 ## Output expectations
 - Default to producing a JSON template file (ask for `{platform}/{provider}.json` name if not provided).

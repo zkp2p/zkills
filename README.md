@@ -34,6 +34,20 @@ skills/
 
 ## Installation
 
+### Prerequisites (both clients)
+
+Chrome DevTools MCP is required for network capture. Install it in the client you use, then restart the client so the MCP server is loaded:
+
+**Codex**
+```bash
+codex mcp add chrome-devtools -- npx chrome-devtools-mcp@latest
+```
+
+**Claude Code**
+```bash
+claude mcp add chrome-devtools -- npx chrome-devtools-mcp@latest
+```
+
 ### Claude Code
 
 **Option 1: Install skill directory**
@@ -50,6 +64,8 @@ Creates `dist/claude/create-zkp2p-provider.md` - a self-contained skill file wit
 
 **Option 3: Manual**
 Copy `src/claude/create-zkp2p-provider/` to your Claude Code skills directory.
+
+After installing the skill, restart Claude Code if you just added Chrome DevTools MCP.
 
 ### Codex
 
@@ -74,12 +90,14 @@ mkdir -p "$CODEX_HOME/skills"
 unzip -o dist/codex/create-zkp2p-provider.skill -d "$CODEX_HOME/skills"
 ```
 
-**Option 2: Use the Codex skill packaging system**
+**Option 3: Use the Codex skill packaging system**
 ```bash
 python3 ~/.codex/skills/.system/skill-creator/scripts/package_skill.py \
   src/codex/create-zkp2p-provider \
   dist/codex
 ```
+
+After installing the skill, restart Codex if you just added Chrome DevTools MCP.
 
 ## Usage
 
