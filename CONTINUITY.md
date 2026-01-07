@@ -11,7 +11,7 @@ Key decisions:
 - UNCONFIRMED: Which specific files/sections in `../dev-browser` should be mirrored or adapted.
 
 State:
-- README updated; preparing commit and push to main.
+- Changes committed and pushed to main.
 
 Done:
 - Read ledger at start of this turn.
@@ -20,12 +20,13 @@ Done:
 - Added "Start small, then scale" guidance to network capture references.
 - Verified Codex/Claude versions align (only expected client-specific install instructions differ).
 - Updated `README.md` with UX workflow and tips.
+- Committed and pushed changes to `main`.
 
 Now:
-- Commit changes and push to `main`.
+- Await further requests.
 
 Next:
-- Commit and push to `main`.
+- (Optional) Rebuild dist artifacts or package skills if requested.
 
 Open questions (UNCONFIRMED if needed):
 - UNCONFIRMED: Should dist artifacts be rebuilt after README update?
