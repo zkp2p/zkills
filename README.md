@@ -8,6 +8,7 @@ Guides users to turn target-platform network requests into valid ZKP2P provider 
 - Capturing network requests via Chrome DevTools MCP
 - Mapping user-specified proof fields (identity, account attributes, or transactions)
 - Producing provider JSON with proper selectors and redactions
+- Using short, stepwise prompts and an iterative capture loop to refine selectors
 
 ## Repository Structure
 
@@ -90,6 +91,18 @@ The skill will guide you through:
 3. Mapping fields to JSONPath/XPath selectors
 4. Assembling the provider template JSON
 5. Testing and iterating
+
+## Recommended workflow (UX)
+
+1. Intake: confirm platform + UI location, and get permission for MCP capture.
+2. Capture: grab one request/response first; confirm it includes the required fields.
+3. Expand: capture list + detail or secondary endpoints only if fields are missing.
+4. Map + confirm: summarize extracted fields and confirm with the user before finalizing.
+5. Assemble + test: build the template, then validate in the developer portal.
+
+Tips:
+- Start small, then scale. Avoid capturing everything at once.
+- Re-trigger actions in the UI to avoid stale CSRF/nonce tokens.
 
 ## Development
 

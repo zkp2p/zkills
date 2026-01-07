@@ -9,6 +9,20 @@ description: Create or update ZKP2P provider templates (zkTLS/Reclaim) by captur
 Guide users to turn target-platform network requests into a valid ZKP2P provider JSON template with safe redaction and testable extraction rules.
 This is an iterative, website-specific process; expect back-and-forth capture/debug and actively consult platform docs or unofficial API references as needed. Use docs to determine whether recipient identifiers (handles/usernames) are stable or mutable and explain the implications to the user rather than asking them to guess.
 
+## Choosing your approach
+- If the user already has network captures or API logs, skip MCP setup and request the payloads.
+- If updating an existing provider, ask for the current template and target changes before capturing.
+- If the user only wants guidance (not a template), focus on field mapping and redaction notes.
+
+## Key principles
+1. Start with one request, confirm fields, then scale to additional endpoints.
+2. Keep prompts short and sequential; ask 1-2 questions at a time.
+3. Prefer stable identifiers and minimal responseMatches.
+4. Re-trigger actions in the UI to avoid stale tokens or mismatches.
+
+## Workflow loop (repeat as needed)
+1. Capture -> inspect -> map -> assemble -> test -> refine.
+
 ## Skill installation and setup (Chrome DevTools MCP)
 - Required before first use. Do not attempt capture until it is installed.
 - If missing or MCP tools are unavailable, install Chrome DevTools MCP in Claude Code yourself: `claude mcp add chrome-devtools -- npx chrome-devtools-mcp@latest`.
@@ -22,6 +36,8 @@ This is an iterative, website-specific process; expect back-and-forth capture/de
 - Resume only after the user confirms a Claude Code restart.
 
 ### 1. Provider intake (first step)
+- Take user input from the initial skill call and answer the following questions if already provided.
+- If the user already shared captures or an existing template, acknowledge and skip ahead to the relevant step.
 - Ask for permission to control a Chrome session and access network data with Chrome DevTools MCP.
 - Ask which website/platform (and region only if it materially changes the flow) they are integrating, and where the data appears (list UI, detail page, profile/settings).
 - Keep intake to 1-2 questions; defer proof-field specifics until after capture.
@@ -33,6 +49,7 @@ Which platform are we targeting, and where in the UI does the data appear (list,
 ```
 
 ### 2. Required setup (login and context)
+- If using MCP capture, open a new Chrome window and ask the user to log in to the platform.
 - Ask the user to log in and navigate to the relevant pages; capture requests as they browse.
 - If the platform or flow is not yet known, ask them to show where the data appears; once they provide enough detail, start intercepting network requests.
 - Expect multiple rounds of navigation and capture; prompt the user to move through the UI while you refine selectors and re-capture as needed.
@@ -47,6 +64,11 @@ Great — please log in to the platform and start navigating to the page with th
 - Request at least one request/response that includes the required proof fields.
 - **Check if multiple requests are needed** (see "Handling Multiple Data Sources" below).
 - If required proof fields were not specified, confirm them after you see candidate responses.
+
+Use this capture prompt (send to the user):
+```
+Please navigate to the page where the data appears and perform the action that loads it. I will capture the request and response. If there is a list view and a detail view, open both so we can capture each request.
+```
 
 ### 4. Identify candidate request(s)
 - Prefer the endpoint that returns the required proof fields (list, detail, profile, or settings).
@@ -73,11 +95,17 @@ Are there other pages or tabs we should explore before we lock onto an endpoint?
 - For fields from multiple sources, use appropriate `paramSelectors.source` values.
 - For payment flows, confirm recipient identifier stability via docs/help/FAQ using network access; explain the implications to the user. If the identifier is mutable or unclear, prefer a stable internal ID or add a second proof source. Do not ask the user to guess stability; only ask them to point to where the identifier appears in the UI if needed.
 - For payment platforms, require only: recipient ID, amount, timestamp, and status (reversible vs settled); include currency when the platform supports multiple currencies. Ask where recipient IDs appear (can be multiple places) and whether amount is split into cents/dollars.
+- Summarize the mapping and confirm the required fields before assembling the final template.
+
+Use this field confirmation prompt (send to the user):
+```
+I can extract the following fields from this response: <list fields>. Are these the exact fields you want to prove? If anything is missing or should be removed, tell me where it appears in the UI and I will capture that request.
+```
 
 ### 7. Assemble the template
 - Fill required top-level fields (`actionType`, `proofEngine`, `authLink`, `url`, `method`, `metadata`).
 - Set `actionType` to reflect the use case (identity, account, transaction).
-- Set `proofEngine` to `"reclaim"` for new templates.
+- Set `proofEngine` to "reclaim" for new templates.
 - Use `references/provider-template.md` for a skeleton and `references/provider-fields.md` for deep field guidance.
 - When possible, align choices with patterns in `references/provider-examples.md` (especially for payment/transaction templates).
 - For multi-request flows, configure `additionalProofs` or `metadataUrl`.
@@ -96,7 +124,7 @@ Are there other pages or tabs we should explore before we lock onto an endpoint?
 
 ---
 
-## MCP-assisted capture (Chrome DevTools) — required
+## MCP-assisted capture (Chrome DevTools) - required
 
 Chrome DevTools MCP must be installed before capture (see Skill installation and setup section). Use it to capture network requests directly (see `references/network-capture.md`).
 
@@ -171,10 +199,14 @@ When you suspect multiple sources are needed, ask:
 
 ---
 
+## Recovery loop
+- Re-trigger the action in the UI to refresh CSRF/nonce tokens before capture.
+- If the response is missing or obfuscated, try a different request or navigate to another page that loads the same data.
+- If raw traffic cannot be shared, request a sanitized sample plus a field mapping table.
+
 ## Gotchas and troubleshooting
 - Some endpoints require CSRF/one-time tokens; always re-trigger the request in-page to refresh tokens before capture.
 - Transaction list metadata and transaction detail proof endpoints can differ; capture both.
-- If response bodies are missing/obfuscated, try a different request or navigate to another page that loads the same data.
 - HTML responses require XPath selectors; JSON responses use JSONPath.
 
 ## Output expectations

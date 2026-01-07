@@ -1,44 +1,35 @@
 Goal (incl. success criteria):
-- Push the updated create-zkp2p-provider guidance (single-escape responseMatches regex, aligned responseRedactions scope, payment-platform required fields) to `main`; success is committed and pushed changes.
+- Update README to reflect improved UX/prompts and push changes to `main`; success is README updated and changes pushed.
 
 Constraints/Assumptions:
 - Follow AGENTS instructions (ledger updates at start and on changes).
-- Keep `src/codex` and `src/claude` references in sync.
-- Update relevant skill docs without reverting unrelated local changes.
-- Use create-zkp2p-provider workflow guidance.
+- Keep `src/codex` and `src/claude` references in sync unless divergence is required.
+- Do not revert unrelated local changes.
+- Use good skills/reference prompts from `../dev-browser` as source of improvements.
 
 Key decisions:
-- UNCONFIRMED: Whether to sync installed `~/.codex/skills/create-zkp2p-provider` after source updates.
+- UNCONFIRMED: Which specific files/sections in `../dev-browser` should be mirrored or adapted.
 
 State:
-- Complete; changes committed and pushed to main.
+- README updated; preparing commit and push to main.
 
 Done:
 - Read ledger at start of this turn.
-- Updated Codex/Claude SKILL workflow guidance for single-escape responseMatches regex, aligned responseRedactions scope, and payment-platform minimum field checklist.
-- Updated Codex/Claude references: provider-fields, provider-template, provider-examples, extension-template-parsing, and network-capture with the new rules and aligned examples.
-- Committed and pushed changes to `main`.
+- Reviewed `../dev-browser` skill and reference prompts for reusable UX patterns.
+- Updated Codex/Claude `SKILL.md` with clearer approach selection, workflow loop, prompts, and recovery guidance.
+- Added "Start small, then scale" guidance to network capture references.
+- Verified Codex/Claude versions align (only expected client-specific install instructions differ).
+- Updated `README.md` with UX workflow and tips.
 
 Now:
-- Await follow-up requests.
+- Commit changes and push to `main`.
 
 Next:
-- (Optional) Rebuild dist artifacts and/or sync `~/.codex/skills/create-zkp2p-provider` if requested.
+- Commit and push to `main`.
 
 Open questions (UNCONFIRMED if needed):
-- Should the installed Codex skill copy in `~/.codex/skills/create-zkp2p-provider` be updated after changes?
+- UNCONFIRMED: Should dist artifacts be rebuilt after README update?
 
 Working set (files/ids/commands):
 - CONTINUITY.md
-- src/codex/create-zkp2p-provider/SKILL.md
-- src/claude/create-zkp2p-provider/SKILL.md
-- src/codex/create-zkp2p-provider/references/provider-fields.md
-- src/claude/create-zkp2p-provider/references/provider-fields.md
-- src/codex/create-zkp2p-provider/references/provider-examples.md
-- src/claude/create-zkp2p-provider/references/provider-examples.md
-- src/codex/create-zkp2p-provider/references/provider-template.md
-- src/claude/create-zkp2p-provider/references/provider-template.md
-- src/codex/create-zkp2p-provider/references/extension-template-parsing.md
-- src/claude/create-zkp2p-provider/references/extension-template-parsing.md
-- src/codex/create-zkp2p-provider/references/network-capture.md
-- src/claude/create-zkp2p-provider/references/network-capture.md
+- README.md

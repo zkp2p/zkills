@@ -5,6 +5,12 @@ Capture request/response pairs that include the required proof fields (identity,
 
 ---
 
+## Start small, then scale
+Do not try to capture everything at once. Work incrementally:
+1. Capture one request and confirm it includes the fields you need.
+2. Inspect one response and identify the exact field paths.
+3. Only then capture additional requests (list + detail, status endpoints, etc).
+
 ## Chrome DevTools MCP (live capture via MCP tools)
 
 Use Chrome DevTools MCP to capture network requests directly from a live Chrome session without installing PeerAuth.
