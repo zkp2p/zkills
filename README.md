@@ -41,7 +41,12 @@ skills/
 
 ### Prerequisites (both clients)
 
-Chrome DevTools MCP is the preferred capture/debugging path. Use it instead of Playwright-style browser automation unless the user explicitly asks for Playwright or MCP cannot reach the flow. Install it in the client you use, then restart the client so the MCP server is loaded:
+Chrome DevTools MCP is the preferred capture/debugging path. Use it instead of Playwright-style browser automation unless the user explicitly asks for Playwright or MCP cannot reach the flow.
+
+Before capture:
+- Install Chrome DevTools MCP in the client you use, then restart the client so the MCP server is loaded.
+- If the client does not expose the `chrome-devtools` skill or the `create-zkp2p-provider` skill, install or enable those skills before continuing.
+- In the Chrome profile the user wants to reuse, open `chrome://inspect/#remote-debugging` and turn on remote debugging so MCP attaches to that existing browser session and reuses its cookies instead of spawning a fresh browser.
 
 **Codex**
 ```bash

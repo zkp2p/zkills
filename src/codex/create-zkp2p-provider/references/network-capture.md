@@ -7,25 +7,28 @@ Capture request/response pairs that include the required proof fields (identity,
 - Prefer Chrome DevTools MCP over Playwright or custom browser automation.
 - Use manual sanitized captures only when MCP is unavailable, the user already has them, or the user explicitly wants a manual path.
 - Do not capture everything at once. Start with one request, confirm the fields, then expand only if needed.
+- If Chrome DevTools MCP, the `chrome-devtools` skill, or the `create-zkp2p-provider` skill is missing, ask the user to install or enable the missing piece before continuing.
 
 ## Chrome DevTools MCP workflow
 
 Use the same interaction pattern as the `chrome-devtools` skill:
 1. Ensure Chrome DevTools MCP is installed and connected for your client.
-2. Open or attach to Chrome, then ask the user to log in.
-3. Use `wait_for` and `take_snapshot` to understand the page before clicking.
-4. Ask the user to open the page that visibly contains the target data.
-5. Trigger the list and detail views that load the relevant requests.
-6. Use `list_network_requests` to locate candidate requests.
+2. Ask the user to open `chrome://inspect/#remote-debugging` in the Chrome profile they want to reuse and turn on remote debugging.
+3. Attach to that existing Chrome session so capture reuses current cookies instead of spawning a fresh browser or switching to Playwright-style automation.
+4. Ask the user to log in there if needed.
+5. Use `wait_for` and `take_snapshot` to understand the page before clicking.
+6. Ask the user to open the page that visibly contains the target data.
+7. Trigger the list and detail views that load the relevant requests.
+8. Use `list_network_requests` to locate candidate requests.
    - Use preserved requests if the flow navigates across pages.
    - Narrow the list to the small set of likely `fetch`, `xhr`, or document requests.
-7. Use `get_network_request` on the relevant request ids to pull full details.
-8. Redact secrets before sharing or storing any sample.
+9. Use `get_network_request` on the relevant request ids to pull full details.
+10. Redact secrets before sharing or storing any sample.
 
 Notes:
 - Prefer `take_snapshot` over screenshots for navigation and page-state inspection.
 - Re-trigger the action if the captured request contains one-time headers, CSRF tokens, or empty bodies.
-- If the login only works in an existing Chrome profile, connect MCP to that running instance instead of recreating the flow elsewhere.
+- The default path is to attach to the user's existing Chrome profile with remote debugging enabled.
 - The MCP server can see the whole browser session. Keep the captured material to the minimum needed for the template.
 
 ## Capturing multiple requests

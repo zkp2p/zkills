@@ -38,15 +38,18 @@ This repo is public. Author against the public provider interface only:
 
 ## Skill installation and setup (Chrome DevTools MCP)
 - Required before first use. Do not attempt capture until it is installed.
-- If missing or MCP tools are unavailable, install Chrome DevTools MCP in Codex yourself: `codex mcp add chrome-devtools -- npx chrome-devtools-mcp@latest`.
-- If you just installed it, tell the user to restart Codex so the MCP server is loaded, then continue once they confirm the restart.
-- Do not ask the user to run the install command.
+- If Chrome DevTools MCP is missing or MCP tools are unavailable, ask the user to install it in Codex: `codex mcp add chrome-devtools -- npx chrome-devtools-mcp@latest`.
+- If the client does not expose the `chrome-devtools` skill or the `create-zkp2p-provider` skill, ask the user to install or enable the missing skill before continuing.
+- Ask the user to open `chrome://inspect/#remote-debugging` in the Chrome profile they want to reuse and turn on remote debugging before live capture.
+- Explain that this lets Chrome DevTools MCP attach to the user's existing Chrome session and reuse current cookies instead of opening a fresh browser like Playwright-style automation.
+- If they just installed MCP or a missing skill, resume only after they restart Codex and confirm the restart.
 
 ## Workflow
 
 ### 0) If Chrome DevTools MCP is not connected, set it up first
-- If any MCP call fails because Chrome DevTools MCP is not connected, install it using the Skill installation and setup section.
-- Resume only after the user confirms a Codex restart.
+- If any MCP call fails because Chrome DevTools MCP is not connected, ask the user to install it using the Skill installation and setup section.
+- If the `chrome-devtools` skill or this skill is missing, ask the user to install the missing skill first.
+- Resume only after the user confirms the install, the restart, and that remote debugging is enabled in the Chrome session they want to reuse.
 
 ### 1. Provider intake (first step)
 - Take user input from the initial skill call and answer the following questions if already provided.
@@ -63,7 +66,7 @@ Which platform are we targeting, and where in the UI does the data appear (list,
 ````
 
 ### 2. Required setup (login and context)
-- If using MCP capture, open a new Chrome window and ask the user to log in to the platform.
+- If using MCP capture, attach to the user's existing Chrome session with remote debugging enabled instead of opening a fresh browser.
 - Ask the user to log in and navigate to the relevant pages; capture requests as they browse.
 - If the platform or flow is not yet known, ask them to show where the data appears; once they provide enough detail, start intercepting network requests.
 - Follow the `chrome-devtools` skill workflow: navigate -> wait -> snapshot -> interact -> inspect network.
@@ -71,7 +74,7 @@ Which platform are we targeting, and where in the UI does the data appear (list,
 
 Use this setup prompt (send to the user):
 ````
-Great - please log in to the platform and start navigating to the page with the data. I'll capture requests as you browse.
+Before we capture anything, please open `chrome://inspect/#remote-debugging` in the Chrome profile you want to reuse and turn on remote debugging. Then stay in that same logged-in Chrome session and start navigating to the page with the data. I'll attach there and capture requests as you browse.
 ````
 
 ### 3. Capture request(s)
@@ -164,8 +167,10 @@ I can extract the following fields from this response: <list fields>. Are these 
 Chrome DevTools MCP must be installed before capture (see Skill installation and setup section). Use it to capture network requests directly (see `references/network-capture.md`).
 
 Use an interactive flow:
+- If MCP or the `chrome-devtools` skill is missing, ask the user to install or enable it before continuing.
+- Ask the user to turn on remote debugging from `chrome://inspect/#remote-debugging` in the Chrome session they want to reuse.
 - Ask for permission to control a Chrome session and access network data.
-- Ask the user to log in to the target platform in the opened browser (if the platform or flow is not yet known, ask them to show where the data lives before intercepting).
+- Attach to that existing logged-in Chrome session instead of spawning a fresh browser (if the platform or flow is not yet known, ask them to show where the data lives before intercepting).
 - Prefer the `chrome-devtools` skill sequence: `new_page` or `navigate_page` -> `wait_for` -> `take_snapshot` -> interaction -> `list_network_requests` -> `get_network_request`.
 - After login, tell the user to start browsing and navigate to the page that contains the proof fields.
 - If they did not already specify where the data lives, ask: "Which page should I click to reach the relevant data (profile, settings, history, transactions)?" and follow their suggested path.
@@ -173,7 +178,7 @@ Use an interactive flow:
 - Navigate the flow and trigger the relevant requests.
 - Use `list_network_requests` to locate candidate requests and `get_network_request` (by `reqid`) to retrieve details.
 - If response bodies are missing or obfuscated, ask for an alternate request or a different page to click.
-- Do not switch to Playwright just because a flow is awkward. Use Playwright only if the user explicitly requests it or Chrome DevTools MCP cannot reach the target flow.
+- Do not switch to Playwright just because a flow is awkward. Use Playwright only if the user explicitly requests it or Chrome DevTools MCP cannot reach the target flow after attaching to the user's existing Chrome session.
 
 ---
 
