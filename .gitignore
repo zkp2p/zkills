@@ -13,6 +13,7 @@ pnpm-debug.log*
 Thumbs.db
 
 tmp/
+CONTINUITY.md
 
 # Build artifacts (regenerate with scripts/)
 dist/

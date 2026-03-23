@@ -1,117 +1,118 @@
 # Network Request Capture Guide
 
 ## Goal
-Capture request/response pairs that include the required proof fields (identity, account attributes, or transaction data). Sometimes you'll need multiple requests if fields are spread across different endpoints.
+Capture request/response pairs that include the required proof fields (identity, account attributes, or transaction data). Sometimes you will need multiple requests because the list UI and the final proof do not come from the same endpoint.
 
----
+## Preferred capture path
+- Prefer Chrome DevTools MCP over Playwright or custom browser automation.
+- Use manual sanitized captures only when MCP is unavailable, the user already has them, or the user explicitly wants a manual path.
+- Do not capture everything at once. Start with one request, confirm the fields, then expand only if needed.
+- If Chrome DevTools MCP, the `chrome-devtools` skill, or the `create-zkp2p-provider` skill is missing, ask the user to install or enable the missing piece before continuing.
 
-## Start small, then scale
-Do not try to capture everything at once. Work incrementally:
-1. Capture one request and confirm it includes the fields you need.
-2. Inspect one response and identify the exact field paths.
-3. Only then capture additional requests (list + detail, status endpoints, etc).
+## Chrome DevTools MCP workflow
 
-## Chrome DevTools MCP (live capture via MCP tools)
+Use the same interaction pattern as the `chrome-devtools` skill:
+1. Ensure Chrome DevTools MCP is installed and connected for your client.
+2. Ask the user to open `chrome://inspect/#remote-debugging` in the Chrome profile they want to reuse and turn on remote debugging.
+3. Attach to that existing Chrome session so capture reuses current cookies instead of spawning a fresh browser or switching to Playwright-style automation.
+4. Ask the user to log in there if needed.
+5. Use `wait_for` and `take_snapshot` to understand the page before clicking.
+6. Ask the user to open the page that visibly contains the target data.
+7. Trigger the list and detail views that load the relevant requests.
+8. Use `list_network_requests` to locate candidate requests.
+   - Use preserved requests if the flow navigates across pages.
+   - Narrow the list to the small set of likely `fetch`, `xhr`, or document requests.
+9. Use `get_network_request` on the relevant request ids to pull full details.
+10. Redact secrets before sharing or storing any sample.
 
-Use Chrome DevTools MCP to capture network requests directly from a live Chrome session without installing PeerAuth.
+Notes:
+- Prefer `take_snapshot` over screenshots for navigation and page-state inspection.
+- Re-trigger the action if the captured request contains one-time headers, CSRF tokens, or empty bodies.
+- The default path is to attach to the user's existing Chrome profile with remote debugging enabled.
+- The MCP server can see the whole browser session. Keep the captured material to the minimum needed for the template.
 
-1. Ensure Chrome DevTools MCP is installed and configured for your MCP client.
-   - Repo: https://github.com/ChromeDevTools/chrome-devtools-mcp
-   - Follow the platform-specific install steps in the skill instructions.
-2. Start Chrome (or let MCP start it), then log in to the target site.
-   - If your login only works in your existing Chrome profile, connect MCP to a running Chrome instance via remote debugging (see the repo for `--browser-url` or `--autoConnect`).
-3. After login, tell the user to start browsing and navigate to the page that contains the proof fields.
-   - Prompt for suggested pages or tabs they can click to reach profile, settings, history, or transaction views.
-4. Perform the flow so the relevant network calls appear.
-5. Use MCP network tools to capture the request(s):
-   - `list_network_requests` to find candidate requests (use `includePreservedRequests: true` if needed).
-   - `get_network_request` with the request `reqid` to fetch full details.
-6. Share the request/response details (with redaction per the section below).
+## Capturing multiple requests
 
-Note: The MCP server can see everything in the browser session. Avoid exposing sensitive data you cannot share.
-
----
-
-## Capturing Multiple Requests
-
-Often, not all required fields are in a single response. You may need to capture multiple requests:
+Often, not all required fields are in a single response. You may need to capture multiple requests.
 
 ### When to capture multiple requests
-- **List + detail**: List shows basic info, clicking loads full details
-- **Status from different endpoint**: Verification/completion status is a separate call
-- **Identity info separate**: Username or display name comes from a profile API
-- **Settings separate**: Attributes live in settings, not the primary response
+- List + detail: the list shows basic info, but clicking loads the real proof data.
+- Status from a different endpoint: verification or settlement state is separate.
+- Identity info separate: username or display name comes from profile/settings APIs.
+- Settings separate: account attributes live outside the primary transaction response.
 
-### How to identify if you need multiple requests
-1. Look at the page: Can you see all required fields?
-2. Click an item: Does it load new data? Check the Network tab for new requests.
-3. Compare: Does the list response have the same fields as the detail response?
+### How to identify whether you need more than one request
+1. Look at the page. Can you already see every field that must be proven?
+2. Click a row or tab. Does a new network request appear?
+3. Compare list and detail responses. Which one contains the stable proof fields?
+4. Decide whether the second request belongs in `metadataUrl` or `additionalProofs`.
 
 ### What to capture for multi-request scenarios
-1. **Primary request**: The main endpoint containing most required fields
-2. **Secondary request(s)**: Any additional calls that contain missing fields
-3. Note which fields come from which request
+1. Primary request: the main endpoint containing most required fields.
+2. Secondary request(s): any additional calls that contain missing fields.
+3. Notes on which fields come from which request.
 
-Example notes to provide:
-```
-Request 1 (profile):
-- URL: /api/profile
-- Contains: username, account_id
+Example notes:
+````
+Request 1 (list):
+- URL: /api/transfers?page=0&size=10
+- Contains: amount, paymentId, date
 
-Request 2 (verification - triggered on click):
-- URL: /api/verification/{id}
-- Contains: status, verified_at
-```
-
----
+Request 2 (detail):
+- URL: /api/transfers/{id}
+- Contains: recipientId, status
+````
 
 ## Minimum fields to capture
 
 For each request, capture:
 - Request URL and method
 - Request headers (redact sensitive values)
-- Request body (if POST/PUT)
+- Request body (if POST, PUT, or PATCH)
 - Response status code
 - Response body
 
-Note which proof fields map to the requests. Examples:
+Also record:
+- Whether the response is JSON or HTML
+- Whether the list response already contains stable `paymentId` values
+- Whether the request must be replayed in-page
+- Whether a second proof is required for recipient identity or settlement details
+
+Common proof-field checklist:
+
 | Field | Required? | Notes |
 |-------|-----------|-------|
-| username | Yes | Account handle |
-| accountId | Yes | Internal account ID |
-| status | Optional | verified/pending |
-| amount | Optional | Only if proving a transaction |
-| date | Optional | Only if proving a transaction |
-
-Payment platforms: require only recipient ID, amount, timestamp, and status (reversible vs settled); include currency if multi-currency. Ask if recipient IDs appear in multiple places and whether amount is split into cents/dollars.
-
----
+| recipientId | Usually | Prefer a stable recipient identifier |
+| amount | Usually | Note whether it is minor or major units |
+| timestamp/date | Usually | Capture the raw response value |
+| status | Often | Especially for reversible vs settled flows |
+| currency | Conditional | Include it when the platform supports multiple currencies |
+| paymentId | Usually | Needed for selection and detail replay |
 
 ## Redaction guidance
 
-Before sharing, redact sensitive information:
+Before sharing, redact sensitive information.
 
 | Keep | Redact |
 |------|--------|
-| URL structure and path | Account numbers, user IDs → REDACTED |
-| Header names | Cookie values, session tokens → REDACTED |
-| Response field names | Access tokens, API keys → REDACTED |
-| Response structure | Personal email, phone → REDACTED |
-| Proof values | Full names unless required for proof |
+| URL structure and path | Account numbers, user IDs -> `REDACTED` |
+| Header names | Cookie values, session tokens -> `REDACTED` |
+| Response field names | Access tokens, API keys -> `REDACTED` |
+| Response structure | Personal email, phone -> `REDACTED` |
+| Proof values | Full names unless required for the proof |
 
 Example:
-```
+````
 Authorization: Bearer REDACTED
 Cookie: session=REDACTED; csrf=REDACTED
-```
+````
 
-Keep enough structure for JSONPath/XPath/regex selectors to work.
-
----
+Keep enough structure for JSONPath, XPath, or regex selectors to work.
+If the final artifact is going into this public repo, keep only public-safe interface details. Do not include private repo links, internal-only endpoints, or raw sensitive payloads.
 
 ## If you cannot share raw traffic
 
-Provide a representative sample and mapping table:
+Provide a representative sample plus a mapping table.
 
 ```json
 {
@@ -123,12 +124,21 @@ Provide a representative sample and mapping table:
 }
 ```
 
-```
-Field      | Source   | Path/Selector
------------|----------|---------------------------
-username   | Request 1| $.profile.username
-accountId  | Request 1| $.profile.id
-status     | Request 1| $.profile.status
-```
+````
+Field       | Source     | Path/Selector
+------------|------------|---------------------------
+username    | Request 1  | $.profile.username
+accountId   | Request 1  | $.profile.id
+status      | Request 1  | $.profile.status
+````
 
-This allows template construction without exposing sensitive data.
+This is enough to author a template without exposing live secrets.
+
+## Capture checklist
+
+- Can the selection UI be built from a list endpoint alone?
+- If not, which click triggers the detail request?
+- Which values belong in `transactionsExtraction` versus `responseMatches`?
+- Which headers must remain secret?
+- Does the current flow need `metadataUrl`, `additionalProofs`, or neither?
+- Would Chrome DevTools MCP be enough for the next iteration, or is the user already providing sanitized payloads?

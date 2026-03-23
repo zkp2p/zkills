@@ -2,6 +2,8 @@
 
 This repo hosts the create-zkp2p-provider skill for guiding AI agents to create zkTLS/Reclaim provider templates. The skill works with both **Claude Code** and **Codex**.
 
+This repo is public. The skill is intentionally written against the current public provider interfaces and public-safe runtime behavior. Do not add private repo links, internal file paths, secrets, or raw sensitive captures to this repo.
+
 ## What This Skill Does
 
 Guides users to turn target-platform network requests into valid ZKP2P provider JSON templates by:
@@ -9,6 +11,8 @@ Guides users to turn target-platform network requests into valid ZKP2P provider 
 - Mapping user-specified proof fields (identity, account attributes, or transactions)
 - Producing provider JSON with proper selectors and redactions
 - Using short, stepwise prompts and an iterative capture loop to refine selectors
+- Staying aligned with the provider file path and manifest contract used by current consumers
+- Covering mobile-only provider fields that appear in real templates today
 
 ## Repository Structure
 
@@ -37,7 +41,12 @@ skills/
 
 ### Prerequisites (both clients)
 
-Chrome DevTools MCP is required for network capture. Install it in the client you use, then restart the client so the MCP server is loaded:
+Chrome DevTools MCP is the preferred capture/debugging path. Use it instead of Playwright-style browser automation unless the user explicitly asks for Playwright or MCP cannot reach the flow.
+
+Before capture:
+- Install Chrome DevTools MCP in the client you use, then restart the client so the MCP server is loaded.
+- If the client does not expose the `chrome-devtools` skill or the `create-zkp2p-provider` skill, install or enable those skills before continuing.
+- In the Chrome profile the user wants to reuse, open `chrome://inspect/#remote-debugging` and turn on remote debugging so MCP attaches to that existing browser session and reuses its cookies instead of spawning a fresh browser.
 
 **Codex**
 ```bash
@@ -92,17 +101,26 @@ The skill will guide you through:
 4. Assembling the provider template JSON
 5. Testing and iterating
 
+## Public Interface Guardrails
+
+- Treat the provider file path as part of the contract: consumers resolve configs at `{platform}/{actionType}.json`.
+- Keep `metadata.platform`, the directory name, and any manifest entry in `providers.json` aligned.
+- Use the current mobile field shape under `mobile.*` (`useExternalAction`, `external`, `internal`, `login`, `userAgent`, `additionalClientOptions`). Do not fall back to older shapes unless you have verified them.
+- When a provider needs more than one proof, document the `additionalProofs` plan and remind the user that downstream client wrappers may also need their proof count updated.
+- If you learned a constraint from a non-public repo, restate it as a public interface rule. Do not paste private code, links, or payloads into this repo.
+
 ## Recommended workflow (UX)
 
 1. Intake: confirm platform + UI location, and get permission for MCP capture.
 2. Capture: grab one request/response first; confirm it includes the required fields.
 3. Expand: capture list + detail or secondary endpoints only if fields are missing.
 4. Map + confirm: summarize extracted fields and confirm with the user before finalizing.
-5. Assemble + test: build the template, then validate in the developer portal.
+5. Assemble + test: build the template, then validate in the developer portal and, when relevant, against the hosted `/providers/{platform}/{actionType}.json` path.
 
 Tips:
 - Start small, then scale. Avoid capturing everything at once.
 - Re-trigger actions in the UI to avoid stale CSRF/nonce tokens.
+- Keep public docs focused on interface behavior, not private implementation details.
 
 ## Development
 
@@ -126,7 +144,7 @@ The skill includes these reference documents:
 - **provider-template.md** - Template skeleton and patterns
 - **provider-fields.md** - Field-by-field documentation
 - **provider-examples.md** - Real examples from the providers repo
-- **extension-template-parsing.md** - Extension parsing behavior
+- **extension-template-parsing.md** - Public-safe runtime behavior and authoring implications
 
 ## License
 
