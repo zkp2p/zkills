@@ -1,149 +1,249 @@
-# Provider Field Reference (from ZKP2P docs)
+# Provider Field Reference
 
-This reference expands on the official "Build a New Provider" doc with field-by-field guidance and common pitfalls. It only covers fields documented there.
+This reference is aligned to the current public provider JSON contract used by ZKP2P consumers. It intentionally avoids private repo references and focuses on stable interface behavior.
+
+## Public contract first
+
+Before filling individual fields, lock down these invariants:
+- The provider file path is `{platform}/{actionType}.json`.
+- `metadata.platform` should match the folder name and any manifest entry in `providers.json`.
+- `actionType` should match the action string used by downstream wrappers and developer tools.
+- Keep the JSON schema current. Do not invent fields from older docs unless you have verified a current consumer still supports them.
 
 ## Basic configuration
 
 ### actionType (required)
-- Purpose: Identifier for the action type (e.g., "transfer_venmo").
-- Use: Must be unique per provider; keep consistent with the platform and flow (send vs receive).
+- Purpose: identifies the action (for example, `transfer_wise`).
+- Use: keep it stable, unique, and aligned with the file name.
 
 ### proofEngine (required for new templates)
-- Purpose: Selects the proof/attestation engine.
-- Use: Set to "reclaim" for all new templates.
+- Purpose: selects the proof engine.
+- Use: set to `reclaim` for new templates.
 
 ### authLink (required)
-- Purpose: URL for user authentication/login.
-- Use: Link to the page where the user is already authenticated or can log in.
+- Purpose: the page the user must open or authenticate against.
+- Use: point to the page that naturally exposes the data you are about to capture.
 
 ### url (required)
-- Purpose: Main endpoint to fetch or verify transaction data.
-- Use: Can include placeholders like {{SENDER_ID}}; placeholders must appear in paramNames.
+- Purpose: the main notarized request URL.
+- Use: placeholders such as `{{PAYMENT_ID}}` must appear in `paramNames`.
 
 ### method (required)
 - Purpose: HTTP method for the main request.
-- Use: Must match the observed request method (GET/POST/PUT/PATCH).
-
-### skipRequestHeaders (optional)
-- Purpose: Headers to exclude from notarized request.
-- Use: Exclude noisy or variable headers that can cause mismatches; do not exclude required auth headers.
+- Use: copy the observed method exactly.
 
 ### body (optional)
-- Purpose: Request body template for POST/PUT.
-- Use: Include placeholders for dynamic values (defined in paramNames). Leave empty for GET.
+- Purpose: request body template for POST-like requests.
+- Use: include placeholders only when the body truly changes per selected item.
 
-## metadata (required)
+### skipRequestHeaders (optional)
+- Purpose: headers to omit from the notarized request.
+- Use: remove unstable noise, but do not remove headers required for the target request to succeed.
+- Runtime detail: some current consumers send no headers when this list is empty, and send "all except skipped" when it is not.
+
+### countryCode (optional)
+- Purpose: geo-hints for the proof engine.
+- Use: only set it when the proof truly depends on region.
+
+## metadata
 
 ### platform (required)
-- Purpose: Platform identifier string (e.g., "venmo").
-- Use: Should match the platform folder name used in the providers repo.
+- Purpose: platform identifier string.
+- Use: should equal the folder name in the public path.
 
 ### urlRegex (required)
-- Purpose: Match the request URL used for metadata extraction.
-- Use: Escape dots and special chars (\\.), and keep the pattern specific to avoid false matches.
+- Purpose: matches the intercepted request used for metadata extraction.
+- Use: escape regex metacharacters and keep the pattern tight enough to avoid unrelated requests.
 
 ### method (required)
-- Purpose: Method for the metadata extraction request.
-- Use: Must match the intercepted request method.
+- Purpose: request method for metadata interception.
+- Use: must match the intercepted request method.
 
 ### fallbackUrlRegex / fallbackMethod (optional)
-- Purpose: Alternative URL/method when the primary endpoint fails or varies.
-- Use: Use for platforms with multiple endpoints or conditional flows.
+- Purpose: backup intercept when the primary endpoint is inconsistent.
+- Use: use them sparingly; they complicate debugging.
 
 ### preprocessRegex (optional)
-- Purpose: Extract embedded JSON from HTML or other wrappers.
-- Use: Supply a regex with a capture group to isolate JSON before JSONPath extraction.
+- Purpose: strips JSON out of HTML or other wrappers before JSONPath extraction.
+- Use: supply a single capture group that isolates the JSON payload.
 
 ### shouldReplayRequestInPage (optional)
-- Purpose: Replay the request in the page context instead of the extension.
-- Use: Required for some SPAs or apps that enforce in-page calls.
+- Purpose: replays the request in the page context instead of a generic fetch.
+- Use: needed for some SPAs or pages with in-page auth or CORS constraints.
 
-### shouldSkipCloseTab (optional)
-- Purpose: Keep the auth tab open after successful authentication.
-- Use: Helpful when users need to perform extra steps after auth.
+### metadataUrl / metadataUrlMethod / metadataUrlBody (optional)
+- Purpose: replays a separate request to build metadata rows.
+- Use: choose this when the list endpoint for UI selection differs from the final proof endpoint.
+- Runtime detail: current mobile replay logic expects `metadataUrl` to stay same-host and `https`.
+- Runtime detail: placeholders are interpolated in the URL, not in `metadataUrlBody`.
 
-### userInput (optional)
-- Purpose: Prompt user to click a transaction element to trigger the detail request.
-- Fields:
-  - promptText: short instruction shown in-page.
-  - transactionXpath: XPath selecting clickable transaction nodes.
-- Use: Critical when a detail request only fires after a click. Prefer stable attributes over volatile classes.
-
-### transactionsExtraction (required for transaction list UI)
-- Purpose: Provide selectors to list transactions for user selection.
-- JSON response:
-  - transactionJsonPathListSelector: JSONPath that points to the list.
-  - transactionJsonPathSelectors: JSONPath per field (amount/date/recipient/paymentId/currency).
-- HTML response:
-  - transactionXPathListSelector: XPath that selects each transaction row.
-  - transactionXPathSelectors: XPath per field.
-- Use: Only one of JSONPath or XPath lists is needed; choose based on response type.
-- Recipient identifiers: In `transaction*Selectors`, ensure `recipient` is a unique, stable identifier. If the platform allows changes, confirm changes invalidate payments (safe) rather than redirect funds (e.g., a Zelle email change invalidates the payment).
-- Payment platforms: Require only recipient ID, amount, timestamp, and status (reversible vs settled); include currency if multi-currency. Ask if recipient IDs appear in multiple places and whether amount is split into cents/dollars.
+### transactionsExtraction (required for transaction selection UIs)
+- Purpose: defines how the UI builds the list of selectable rows.
+- JSON response fields:
+  - `transactionJsonPathListSelector`
+  - `transactionJsonPathSelectors`
+- HTML response fields:
+  - `transactionXPathListSelector`
+  - `transactionXPathSelectors`
+- Use JSONPath for JSON and XPath for HTML. Do not mix them unless you have verified the consumer needs both.
+- Consumer behavior: missing or null extracted fields usually hide the row, so keep the field set minimal and consistently extractable.
+- Common fields in public templates:
+  - `recipient`
+  - `recipientName`
+  - `amount`
+  - `date`
+  - `paymentId`
+  - `currency`
+  - `status`
+  - `type`
+- Payment platforms should prioritize recipient ID, amount, timestamp/date, and status. Add currency when the platform supports more than one currency.
 
 ### proofMetadataSelectors (optional)
-- Purpose: Additional selectors whose values are included in the proof metadata.
-- Use: Include values that must be bound to the proof beyond responseMatches.
+- Purpose: UI-facing metadata derived from the intercepted response.
+- Use: keep them aligned with the selected row, but do not treat them as proof-enforced fields.
+
+### Compatibility fields seen in current public templates
+
+#### metadata.userInput (optional)
+- Purpose: instructs an extension-style runtime to prompt the user to click a specific element before metadata arrives.
+- Fields:
+  - `promptText`
+  - `transactionXpath`
+- Use: only when the detail request fires after a click and you have verified the target runtime honors it.
+
+#### metadata.shouldSkipCloseTab (optional)
+- Purpose: keeps the auth tab open after authentication.
+- Use: only when closing the tab would kill the session needed for replay.
 
 ## Parameter extraction
 
-### paramNames (required)
-- Purpose: List of placeholder names used in url/body.
-- Use: Each {{NAME}} must appear in this list.
+### paramNames (required when placeholders exist)
+- Purpose: ordered list of placeholder names used in `url` or `body`.
+- Use: every `{{NAME}}` in the template should appear here.
 
-### paramSelectors (required)
-- Purpose: Extraction rules for parameter values.
+### paramSelectors (required when placeholders exist)
+- Purpose: ordered extraction rules for each param.
 - Fields:
-  - type: jsonPath | regex | xPath
-  - value: selector string
-  - source: url | responseBody | responseHeaders | requestHeaders | requestBody (default responseBody)
-- Use: For regex selectors, include capture groups (). Use source when extracting from non-default locations.
+  - `type`: `jsonPath`, `regex`, or `xPath`
+  - `value`: selector string
+  - `source`: `url`, `responseBody`, `responseHeaders`, `requestHeaders`, or `requestBody`
+- Use: `paramNames` and `paramSelectors` are positional. Keep them in the same order.
+- Regex selectors should use a capture group when you want a specific sub-value.
 
 ## Security
 
 ### secretHeaders (optional)
-- Purpose: List of headers containing sensitive data.
-- Use: Include auth headers like Authorization/Cookie so they are handled safely.
+- Purpose: mark sensitive headers so they are handled as secrets.
+- Use: include auth material such as `Cookie`, `Authorization`, or platform-specific session headers.
+
+### responseRedactions (optional)
+- Purpose: redact sensitive or unnecessary response fields.
+- Fields:
+  - `jsonPath`
+  - `xPath`
+  - `regex`
+- Use: scope redactions to the same response object as `responseMatches`.
+- Use `{{INDEX}}` for list responses so the redaction follows the selected row.
 
 ## Response verification
 
 ### responseMatches (required)
-- Purpose: Patterns used to verify data in the response.
+- Purpose: binds proof-relevant fields from the final response.
 - Fields:
-  - type: jsonPath | regex
-  - value: selector/pattern
-  - hash: optional boolean
-- Use: Keep matches minimal for performance; never include secrets in responseMatches.
-- Regex escaping: Use single-escaped patterns (one JSON-escape layer); if copied from stringified JSON/logs, unescape once before using.
+  - `type`: `jsonPath` or `regex`
+  - `value`
+  - `hash` (optional)
+- Use: keep them minimal. Bind only what the proof actually needs.
+- Regex escaping: use single-escaped patterns suitable for JSON files.
+- Runtime detail: do not rely on `{{INDEX}}` interpolation in `responseMatches`; some consumers forward them unchanged.
 
-### responseRedactions (optional)
-- Purpose: Remove PII or sensitive fields from the response.
+## additionalProofs
+
+### additionalProofs (optional)
+- Purpose: generates more than one notarized proof for a single provider flow.
+- Each entry can define:
+  - `url`
+  - `method`
+  - `body`
+  - `paramNames`
+  - `paramSelectors`
+  - `skipRequestHeaders`
+  - `secretHeaders`
+  - `responseMatches`
+  - `responseRedactions`
+- Use: choose this when a second endpoint must be independently proven, not just replayed for metadata.
+- Downstream implication: if a consumer wrapper exposes `totalProofs`, it should stay aligned with the number of proofs the provider actually needs.
+- Runtime caution: some current consumers resolve additional-proof params only from the original response body with simple JSONPath and regex flows. Keep these selectors straightforward unless you have verified the target runtime.
+
+## mobile
+
+### mobile.includeAdditionalCookieDomains
+- Purpose: extends the cookie domain set for mobile replay flows.
+- Use: add domains only when the same session spans multiple related hosts.
+
+### mobile.useExternalAction
+- Purpose: chooses whether native-app deep links should be preferred over internal WebView flows.
+- Use: `true` means prefer `mobile.external`, otherwise prefer `mobile.internal`.
+
+### mobile.userAgent
+- Purpose: overrides the replay/browser user agent for Android and iOS.
+- Use: copy existing public template patterns when a platform behaves differently by user agent.
+
+### mobile.additionalClientOptions
+- Purpose: mobile-only transport overrides.
+- Current public shape:
+  - `cipherSuites`
+  - `supportedProtocolVersions`
+- Use: keep this nested under `mobile`. Older top-level examples are outdated.
+
+### mobile.external
+- Purpose: deep links into the native app.
 - Fields:
-  - jsonPath or xPath
-- Use: Redact user identifiers, tokens, or unrelated data while keeping required proof fields intact.
-- Scope: Keep redactions in the same response object as `responseMatches`; for list responses, include `{{INDEX}}` to align redactions with the selected item.
+  - `actionLink`
+  - `appStoreLink`
+  - `playStoreLink`
+- Use: interpolate only values the mobile runtime can actually provide, such as `{{RECIPIENT_ID}}` or `{{AMOUNT}}`.
 
-## Mobile SDK (optional)
+### mobile.internal
+- Purpose: uses an internal browser or WebView action instead of a native deep link.
+- Fields:
+  - `actionLink`
+  - `actionCompletedUrlRegex` (optional)
+- Use: use when the target flow works better in a WebView than in the native app.
 
-### includeAdditionalCookieDomains
-- Purpose: Include extra domains for cookies.
-- Use: Add domains required to authenticate the request in mobile contexts.
+### mobile.login
+- Purpose: optional login assist selectors.
+- Fields:
+  - `usernameSelector`
+  - `passwordSelector`
+  - `submitSelector`
+  - `nextSelector`
+  - `revealTimeoutMs`
+- Use: make these broad enough to survive small UI changes, but not so broad that they hit the wrong form.
 
-### actionLink / isExternalLink / appStoreLink / playStoreLink
-- Purpose: Deep link to the mobile app and store links for installation.
-- Use: Use placeholders for dynamic values in actionLink; set isExternalLink when needed.
+## Legacy or drift-prone fields
 
-## Best practices (from docs)
-- Escape special characters in urlRegex and keep patterns specific.
-- Use JSONPath for JSON responses and XPath for HTML responses.
-- For regex selectors, always use capture groups.
-- Specify source for paramSelectors when not using responseBody.
-- Add secretHeaders and responseRedactions to protect PII.
-- Use fallback URLs and preprocessRegex for complex responses.
-- Minimize responseMatches and avoid wildcards when possible.
+Older docs mention shapes such as:
+- top-level `additionalClientOptions`
+- `mobile.actionLink`
+- `isExternalLink`
+- `transactionRegexSelectors`
+- custom injected WebView JavaScript blocks
 
-## Common issues (from docs)
-- Auth link not opening: verify extension Base URL and local server.
-- Authenticated but not redirected: urlRegex mismatch.
-- Prove fails after metadata: check responseRedactions and headers.
-- Parameters not extracted: verify paramSelectors source.
+Do not use those fields by default. They do not match the current public contract we validated for this skill.
+
+## Best practices
+- Escape regex metacharacters in `urlRegex`.
+- Use JSONPath for JSON and XPath for HTML.
+- Keep `transactionsExtraction` minimal so rows do not disappear due to missing fields.
+- Use stable recipient identifiers when available.
+- Keep `responseMatches` small and proof-relevant.
+- Redact everything you do not need.
+- Prefer Chrome DevTools MCP over Playwright for capture and debug loops.
+
+## Common issues
+- Auth link opens but no metadata arrives: `metadata.urlRegex` or `metadata.method` is wrong.
+- Metadata rows are empty or hidden: the list selector or one of the extracted fields is wrong.
+- Replay works for metadata but proof fails: check `skipRequestHeaders`, `secretHeaders`, and `responseRedactions`.
+- Params are blank: the `source` is wrong, or `paramNames` and `paramSelectors` are out of order.
+- Mobile flow opens the wrong app/page: verify the `mobile.external` vs `mobile.internal` shape and `useExternalAction` setting.
