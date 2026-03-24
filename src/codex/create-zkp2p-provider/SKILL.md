@@ -13,6 +13,8 @@ This repo is public. Author against the public provider interface only:
 - Do not paste private repo links, internal file paths, secrets, raw cookies, or sensitive payloads into the skill output or PR.
 - Prefer Chrome DevTools MCP for capture and debugging. Do not default to Playwright or custom browser automation from other repos unless the user explicitly asks for that path.
 
+When the user asks to test an existing provider, default to the real end-to-end flow in `https://developer.peer.xyz` with PeerAuth installed and connected. This is an iterative, website-specific process; expect back-and-forth capture/debug and actively consult platform docs or unofficial API references as needed. Use docs to determine whether recipient identifiers (handles/usernames) are stable or mutable and explain the implications to the user rather than asking them to guess.
+
 ## Choosing your approach
 - If the user already has network captures or API logs, skip MCP setup and request the payloads.
 - If updating an existing provider, ask for the current template and target changes before capturing.
@@ -83,6 +85,12 @@ Before we capture anything, please open `chrome://inspect/#remote-debugging` in 
 - Check if multiple requests are needed (see "Handling Multiple Data Sources" below).
 - If required proof fields were not specified, confirm them after you see candidate responses.
 - Prefer `take_snapshot` over screenshots when navigating, and use `list_network_requests` plus `get_network_request` for the actual capture.
+- Use Chrome DevTools MCP iteratively during capture instead of treating capture as a one-shot step:
+  - drive the page with `navigate_page`, `click`, `fill`, and `evaluate_script`
+  - inspect candidate requests with `list_network_requests`
+  - retrieve exact request/response payloads with `get_network_request`
+  - repeat until the captured request set is sufficient for both metadata extraction and proof generation
+- For provider tests, capture against the same authenticated browser session that the PeerAuth flow uses so the debug path matches the real runtime path.
 
 Use this capture prompt (send to the user):
 ````
@@ -99,6 +107,7 @@ Please navigate to the page where the data appears and perform the action that l
 - Ask if there are other pages or endpoints worth exploring before locking on the request.
 - If this is a payment/transaction proof, prompt the user to open a transaction list/history and then a specific transaction detail.
 - Capture both list and detail endpoints; the list metadata URL can differ from the proof endpoint for a specific transaction (for example, Wise).
+- If you are testing a provider and the real PeerAuth flow is available, do not stop after raw capture. Continue through `AUTHENTICATE` and `PROVE` in `developer.peer.xyz`.
 - If this is a brand new provider, settle the public path now: platform folder, `actionType`, and whether a `providers.json` manifest entry will be needed.
 
 Use this clarification prompt (send to the user):
@@ -119,9 +128,9 @@ Are there other pages or tabs we should explore before we lock onto an endpoint?
 - Keep `responseRedactions` scoped to the same response object as `responseMatches`; for list responses, use `{{INDEX}}` so redactions align with the selected item.
 - For fields from multiple sources, use appropriate `paramSelectors.source` values.
 - If you use `metadataUrl`, keep it same-host `https` and remember that current consumers do not interpolate placeholders into `metadataUrlBody`.
+- If a second endpoint is required, decide whether it belongs in `metadataUrl` or `additionalProofs`. Use `additionalProofs` when a second notarized response must become part of the proof set.
 - For payment flows, confirm recipient identifier stability via docs/help/FAQ using network access; explain the implications to the user. If the identifier is mutable or unclear, prefer a stable internal ID or add a second proof source. Do not ask the user to guess stability; only ask them to point to where the identifier appears in the UI if needed.
 - For payment platforms, require only: recipient ID, amount, timestamp, and status (reversible vs settled); include currency when the platform supports multiple currencies. Ask where recipient IDs appear (can be multiple places) and whether amount is split into cents/dollars.
-- If a second endpoint is required, decide whether it belongs in `metadataUrl` or `additionalProofs`. Use `additionalProofs` when a second notarized response must become part of the proof set.
 - Summarize the mapping and confirm the required fields before assembling the final template.
 
 Use this field confirmation prompt (send to the user):
@@ -148,17 +157,41 @@ I can extract the following fields from this response: <list fields>. Are these 
 
 ### 8. Test in the developer portal
 - Confirm the user has already cloned the providers repo locally.
-- Have the user test on `https://developer.zkp2p.xyz`.
+- Prefer `https://developer.peer.xyz` for live testing. If `developer.zkp2p.xyz` redirects there, continue on `developer.peer.xyz`.
 - Ask them to install the PeerAuth extension: `https://chromewebstore.google.com/detail/peerauth-authenticate-and/ijpgccednehjpeclfcllnjjcmiohdjih`.
-- In the developer settings dropdown, set the Providers URL to `http://localhost:8080`.
+- Start the local providers server first and verify the target file resolves from `http://localhost:8080/{platform}/{actionType}.json`.
+- Use Chrome DevTools MCP to operate the developer page yourself when possible; do not stop after telling the user what to click if the browser is available.
+- Open the developer page settings and point the Providers URL or Base URL to `http://localhost:8080`.
+- Try to update that setting yourself with Chrome DevTools MCP when the extension settings UI is exposed as a normal page or popup.
+- If `Open Settings` only opens the Chrome side panel and the side panel is not exposed to MCP as a controllable page, state that limitation and ask the user to set `http://localhost:8080/` manually in PeerAuth before continuing.
+- Fill `Action Type` and `Payment Platform` with the target provider values.
+- Click `AUTHENTICATE` and wait for metadata to appear or for the extension bridge to emit a metadata response.
+- Click `PROVE` and wait for the proof to complete before declaring the provider test successful.
+- Treat a successful end-to-end proof as the authoritative pass signal. After that, inspect metadata quality, extracted values, and redactions for correctness.
+- If the developer page already has stale metadata or proof state, reload it and re-run `AUTHENTICATE` before debugging.
+- If the extension is connected, use the developer page and console as the source of truth for the bridge events:
+  - `fetch_extension_version`
+  - `open_new_tab`
+  - `metadata_messages_response`
+  - `fetch_proof_request_id_response`
+  - `fetch_proof_by_id_response`
+- Use the actual developer app behavior as the testing contract:
+  - `AUTHENTICATE` triggers `open_new_tab(actionType, platform)`
+  - metadata arrives back through `metadata_messages_response`
+  - `PROVE` triggers proof generation for the selected `originalIndex`
+  - proof completion arrives through `fetch_proof_request_id_response` and `fetch_proof_by_id_response`
 - If they are validating against a hosted providers service, ensure the public path resolves at `/providers/{platform}/{actionType}.json` and that the manifest includes the file.
 
 ### 9. Validate and iterate
 - Use Chrome DevTools MCP to open a fresh browser window/session, have the user log in, and re-run the flow to confirm the endpoint is captured.
-- Test in the providers dev flow (see docs in `references/provider-template.md`).
+- Test in the providers dev flow in `developer.peer.xyz`, not only by inspecting raw network requests.
 - If replay fails due to CSRF or nonce tokens, have the user re-run the action in the page and re-capture the request (avoid manual replay of stale requests).
 - Tighten `urlRegex`, add `fallbackUrlRegex`, and refine selectors based on failures.
 - If the proof succeeds but the user cannot select the intended row, inspect `transactionsExtraction` for missing/null fields or wrong list scoping.
+- If the proof succeeds but metadata looks wrong, compare three layers before concluding the provider is broken:
+  - developer page metadata
+  - generated proof JSON extracted parameters
+  - raw matched response body and redactions
 
 ---
 
@@ -167,18 +200,22 @@ I can extract the following fields from this response: <list fields>. Are these 
 Chrome DevTools MCP must be installed before capture (see Skill installation and setup section). Use it to capture network requests directly (see `references/network-capture.md`).
 
 Use an interactive flow:
+- If the user asked to test a provider, operate the PeerAuth flow through `developer.peer.xyz`. Do not try to manually operate the browser toolbar popup for the extension; use the developer page controls that proxy to the extension.
+- Do not assume extension settings are scriptable through the same bridge. The developer page can drive auth and proof generation, but provider settings may still live only in the extension side panel UI.
+- Prefer the `chrome-devtools` skill sequence: `new_page` or `navigate_page` -> `wait_for` -> `take_snapshot` -> interaction -> `list_network_requests` -> `get_network_request`.
 - If MCP or the `chrome-devtools` skill is missing, ask the user to install or enable it before continuing.
 - Ask the user to turn on remote debugging from `chrome://inspect/#remote-debugging` in the Chrome session they want to reuse.
 - Ask for permission to control a Chrome session and access network data.
 - Attach to that existing logged-in Chrome session instead of spawning a fresh browser (if the platform or flow is not yet known, ask them to show where the data lives before intercepting).
-- Prefer the `chrome-devtools` skill sequence: `new_page` or `navigate_page` -> `wait_for` -> `take_snapshot` -> interaction -> `list_network_requests` -> `get_network_request`.
 - After login, tell the user to start browsing and navigate to the page that contains the proof fields.
 - If they did not already specify where the data lives, ask: "Which page should I click to reach the relevant data (profile, settings, history, transactions)?" and follow their suggested path.
 - Ask: "Are there other pages or tabs I should click to reveal the required fields?" only if needed.
 - Navigate the flow and trigger the relevant requests.
 - Use `list_network_requests` to locate candidate requests and `get_network_request` (by `reqid`) to retrieve details.
 - If response bodies are missing or obfuscated, ask for an alternate request or a different page to click.
+- When the developer page is available, do not stop after metadata extraction. Continue through `PROVE` unless the user explicitly asked for metadata-only validation.
 - Do not switch to Playwright just because a flow is awkward. Use Playwright only if the user explicitly requests it or Chrome DevTools MCP cannot reach the target flow after attaching to the user's existing Chrome session.
+- If you need the extension's Providers Base URL and the `fetch_provider_base_url` bridge does not respond, treat that as an implementation gap rather than a provider failure.
 
 ---
 
@@ -189,25 +226,25 @@ Sometimes the required proof fields are not all in a single API response. Common
 ### Scenario: Status or verification from a different endpoint
 - The main response shows basic info (username, account ID, or transaction summary)
 - Verification status or completion state requires a detail endpoint
-- Solution: use `metadataUrl` when the second call is only needed to build the selection list. Use `additionalProofs` when the second call must become part of the final proof set.
+- **Solution:** Use `metadataUrl` when the second call is only needed to build the selection list. Use `additionalProofs` when the second call must become part of the final proof set.
 
 ### Scenario: Identity fields from separate API call
 - One endpoint returns an account ID
 - Another endpoint returns user profile info (username, display name)
-- Solution:
-  - Use `paramSelectors` with different `source` values to extract from multiple places.
-  - Consider if a click-driven flow can trigger both requests.
-  - Use `additionalProofs` if both responses must be proven.
+- **Solution:**
+  - Use `paramSelectors` with different `source` values to extract from multiple places
+  - Consider if `userInput` click flow can trigger both requests
+  - May need `additionalProofs` if both responses must be proven
 
 ### Scenario: Attribute in a different response than the main object
 - The primary response contains the base object
 - A related attribute lives in settings or headers
-- Solution: use `paramSelectors` with `source: "responseHeaders"` or move the missing value into a second proof source.
+- **Solution:** Use `paramSelectors` with `source: "responseHeaders"` or move the missing value into a second proof source.
 
 ### Scenario: Confirmation page after list view
 - User must click an item to reveal the provable detail
 - The detail request is what contains the verifiable data
-- Solution: use `metadata.userInput` only if you have verified the target runtime supports it, then capture the triggered request and treat it as the actual proof candidate.
+- **Solution:** Configure `metadata.userInput` only if you have verified the target runtime supports it, then capture the triggered request and treat it as the actual proof candidate.
 
 ### What to ask the user
 When you suspect multiple sources are needed, ask:
@@ -241,12 +278,6 @@ When you suspect multiple sources are needed, ask:
 
 ---
 
-## Recovery loop
-- Re-trigger the action in the UI to refresh CSRF/nonce tokens before capture.
-- If the response is missing or obfuscated, try a different request or navigate to another page that loads the same data.
-- If raw traffic cannot be shared, request a sanitized sample plus a field mapping table.
-- If the user shares private runtime context, restate only the public interface implication in your final template notes.
-
 ## Gotchas and troubleshooting
 - Some endpoints require CSRF or one-time tokens; always re-trigger the request in-page to refresh tokens before capture.
 - Transaction list metadata and transaction detail proof endpoints can differ; capture both.
@@ -258,18 +289,15 @@ When you suspect multiple sources are needed, ask:
 ## Output expectations
 - Default to producing a JSON template file (ask for `{platform}/{provider}.json` name if not provided).
 - For payment and transaction providers, default to `{platform}/transfer_platform.json`.
-- For payment platforms, confirm the required field set (recipient ID, amount, timestamp, status, and currency if multi-currency), avoid extra fields unless the user asks, and document any multi-source or split-amount handling.
-- If the provider is new, include the `providers.json` manifest entry that should be added.
-- If the provider is meant to ship in an app, include a short handoff note listing any downstream wrapper fields that must stay aligned.
+- For payment platforms, confirm the required field set (recipient ID, amount, timestamp, status; currency if multi-currency), avoid extra fields unless the user asks, and document any multi-source or split-amount handling.
 - Provide a short mapping table: source field -> JSONPath/XPath/regex.
 - Call out missing data in the capture and ask for additional requests.
 - Note any fields that require multi-source extraction.
 - Confirm the intended proof statement and required fields with the user.
-- Keep all public-facing output free of private repo links, secrets, and raw sensitive captures.
 
 ## References
 - `references/network-capture.md` for request collection and redaction guidance.
 - `references/provider-template.md` for the skeleton and extraction patterns.
-- `references/provider-fields.md` for field-by-field guidance.
-- `references/provider-examples.md` for real public template patterns.
-- `references/extension-template-parsing.md` for public-safe runtime behavior.
+- `references/provider-fields.md` for detailed field-by-field guidance from the docs.
+- `references/provider-examples.md` for real templates from the providers repo.
+- `references/extension-template-parsing.md` for exact extension parsing logic.
