@@ -166,6 +166,7 @@ I can extract the following fields from this response: <list fields>. Are these 
 - If `Open Settings` only opens the Chrome side panel and the side panel is not exposed to MCP as a controllable page, state that limitation and ask the user to set `http://localhost:8080/` manually in PeerAuth before continuing.
 - Fill `Action Type` and `Payment Platform` with the target provider values.
 - Click `AUTHENTICATE` and wait for metadata to appear or for the extension bridge to emit a metadata response.
+- If `AUTHENTICATE` opens a login page instead of the target authenticated page, stop there and ask the user to log in in that same Chrome profile/session. After they confirm login is complete, reload `developer.peer.xyz` and resume from `AUTHENTICATE` rather than treating the result as a provider failure.
 - Click `PROVE` and wait for the proof to complete before declaring the provider test successful.
 - Treat a successful end-to-end proof as the authoritative pass signal. After that, inspect metadata quality, extracted values, and redactions for correctness.
 - If the developer page already has stale metadata or proof state, reload it and re-run `AUTHENTICATE` before debugging.
@@ -201,6 +202,7 @@ Chrome DevTools MCP must be installed before capture (see Skill installation and
 
 Use an interactive flow:
 - If the user asked to test a provider, operate the PeerAuth flow through `developer.peer.xyz`. Do not try to manually operate the browser toolbar popup for the extension; use the developer page controls that proxy to the extension.
+- If the auth tab lands on a login page, pause and ask the user to complete login before continuing. Resume the test only after the authenticated page is reachable in that same Chrome session.
 - Do not assume extension settings are scriptable through the same bridge. The developer page can drive auth and proof generation, but provider settings may still live only in the extension side panel UI.
 - Prefer the `chrome-devtools` skill sequence: `new_page` or `navigate_page` -> `wait_for` -> `take_snapshot` -> interaction -> `list_network_requests` -> `get_network_request`.
 - If MCP or the `chrome-devtools` skill is missing, ask the user to install or enable it before continuing.
