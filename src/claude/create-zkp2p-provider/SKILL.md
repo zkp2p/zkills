@@ -168,6 +168,9 @@ I can extract the following fields from this response: <list fields>. Are these 
 - Click `AUTHENTICATE` and wait for metadata to appear or for the extension bridge to emit a metadata response.
 - If `AUTHENTICATE` opens a login page instead of the target authenticated page, stop there and ask the user to log in in that same Chrome profile/session. After they confirm login is complete, reload `developer.peer.xyz` and resume from `AUTHENTICATE` rather than treating the result as a provider failure.
 - Click `PROVE` and wait for the proof to complete before declaring the provider test successful.
+- If the provider uses `additionalProofs`, you may need to manually set `Proof Index` to `1+` in the developer portal or PeerAuth extension to inspect non-primary proofs.
+- If a platform config still has `totalProofs=1`, the extension will not auto-generate extra proofs even when the provider JSON defines `additionalProofs`; update the wrapper proof count to match the provider before expecting those proofs to appear.
+- Treat manual `Proof Index` testing as an inspection aid, not proof that the full chained flow works. Some additional proofs depend on parameters produced by proof `0`, so forcing proof `1` directly can fail (for example with `404`) even when the provider JSON is otherwise correct.
 - Treat a successful end-to-end proof as the authoritative pass signal. After that, inspect metadata quality, extracted values, and redactions for correctness.
 - If the developer page already has stale metadata or proof state, reload it and re-run `AUTHENTICATE` before debugging.
 - If the extension is connected, use the developer page and console as the source of truth for the bridge events:
