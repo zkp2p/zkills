@@ -1,6 +1,10 @@
-# Create ZKP2P Provider Skill
+# ZKP2P Skills
 
-This repo hosts the create-zkp2p-provider skill for guiding AI agents to create zkTLS/Reclaim provider templates. The skill works with both **Claude Code** and **Codex**.
+This repo hosts ZKP2P skills for **Claude Code** and **Codex**.
+
+Current skills:
+- `create-zkp2p-provider` for guiding AI agents to create zkTLS/Reclaim provider templates
+- `query-zkp2p-indexer` for querying the ZKP2P Hasura indexer on Base and formatting protocol data
 
 This repo is public. The skill is intentionally written against the current public provider interfaces and public-safe runtime behavior. Do not add private repo links, internal file paths, secrets, or raw sensitive captures to this repo.
 
@@ -24,9 +28,13 @@ skills/
 │   │       ├── SKILL.md              # Claude Code skill definition
 │   │       └── references/           # Supporting documentation
 │   └── codex/
-│       └── create-zkp2p-provider/
+│       ├── create-zkp2p-provider/
+│       │   ├── SKILL.md              # Codex skill definition
+│       │   └── references/           # Supporting documentation
+│       └── query-zkp2p-indexer/
 │           ├── SKILL.md              # Codex skill definition
-│           └── references/           # Supporting documentation
+│           ├── agents/openai.yaml    # Codex UI metadata
+│           └── references/           # Query patterns and lookups
 ├── scripts/
 │   ├── install-claude.sh            # Install for Claude Code
 │   ├── bundle-claude.sh             # Bundle into single file
@@ -86,6 +94,15 @@ $skill-installer https://github.com/zkp2p/zkills/tree/main/src/codex/create-zkp2
 ```
 
 After installing the skill, restart Codex if you just added Chrome DevTools MCP.
+
+### Codex: Query ZKP2P Indexer
+
+```bash
+codex
+$skill-installer https://github.com/zkp2p/zkills/tree/main/src/codex/query-zkp2p-indexer
+```
+
+Use this skill when you want reusable GraphQL queries for deposits, intents, quote candidates, maker or taker stats, manager stats, or when raw bigint and hash fields need to be formatted for humans.
 
 ## Usage
 

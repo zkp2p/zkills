@@ -1,0 +1,4 @@
+interface:
+  display_name: "Query ZKP2P Indexer"
+  short_description: "Query and format ZKP2P indexer data"
+  default_prompt: "Use $query-zkp2p-indexer to inspect deposits, intents, quote candidates, or maker and taker stats from the ZKP2P Base indexer."
